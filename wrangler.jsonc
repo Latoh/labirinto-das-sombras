@@ -1,0 +1,10 @@
+{
+  "name": "labirinto-das-sombras",
+  "compatibility_date": "2026-09-18",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "."
+  }
+}

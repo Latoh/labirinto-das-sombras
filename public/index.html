@@ -232,35 +232,42 @@
   .btn-ghost:hover{ border-color:var(--gold-dim); color:var(--gold); }
 
   .dpad{
-    position:absolute;
-    right:10px;
-    bottom:10px;
-    width:112px;
-    height:112px;
+    width:168px;
+    height:168px;
+    margin:0 auto;
     display:grid;
     grid-template-columns:repeat(3,1fr);
     grid-template-rows:repeat(3,1fr);
-    gap:4px;
-    opacity:0.82;
+    gap:6px;
   }
   .dpad-btn{
-    background:rgba(20,15,11,0.72);
+    background:linear-gradient(180deg, var(--surface-2), var(--surface));
     border:1px solid var(--stone);
     color:var(--gold);
-    font-size:16px;
-    border-radius:5px;
+    font-size:20px;
+    border-radius:8px;
     display:flex;
     align-items:center;
     justify-content:center;
     -webkit-user-select:none;
     user-select:none;
     cursor:pointer;
+    box-shadow:0 3px 0 var(--stone-dim);
   }
-  .dpad-btn:active{ background:rgba(226,113,47,0.35); }
+  .dpad-btn:active{
+    background:rgba(226,113,47,0.35);
+    transform:translateY(2px);
+    box-shadow:none;
+  }
   .dpad-n{ grid-column:2; grid-row:1; }
   .dpad-w{ grid-column:1; grid-row:2; }
   .dpad-s{ grid-column:2; grid-row:3; }
   .dpad-e{ grid-column:3; grid-row:2; }
+
+  @media (max-width:480px){
+    .dpad{ width:204px; height:204px; }
+    .dpad-btn{ font-size:24px; }
+  }
 
   .footer-row{
     display:flex;
@@ -337,13 +344,13 @@
           <button class="btn" id="winRestart" type="button">Novo labirinto</button>
         </div>
       </div>
+    </div>
 
-      <div class="dpad" id="dpad">
-        <button class="dpad-btn dpad-n" data-dir="N" type="button" aria-label="Mover para cima">▲</button>
-        <button class="dpad-btn dpad-w" data-dir="W" type="button" aria-label="Mover para esquerda">◀</button>
-        <button class="dpad-btn dpad-s" data-dir="S" type="button" aria-label="Mover para baixo">▼</button>
-        <button class="dpad-btn dpad-e" data-dir="E" type="button" aria-label="Mover para direita">▶</button>
-      </div>
+    <div class="dpad" id="dpad">
+      <button class="dpad-btn dpad-n" data-dir="N" type="button" aria-label="Mover para cima">▲</button>
+      <button class="dpad-btn dpad-w" data-dir="W" type="button" aria-label="Mover para esquerda">◀</button>
+      <button class="dpad-btn dpad-s" data-dir="S" type="button" aria-label="Mover para baixo">▼</button>
+      <button class="dpad-btn dpad-e" data-dir="E" type="button" aria-label="Mover para direita">▶</button>
     </div>
 
     <div class="footer-row">

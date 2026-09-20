@@ -96,7 +96,8 @@
   .card-erros .card-screen,
   .card-logica .card-screen,
   .card-blocos .card-screen,
-  .card-corrida .card-screen{
+  .card-corrida .card-screen,
+  .card-ritmo .card-screen{
     background:linear-gradient(180deg, #8fd1ea 0%, #bfe8f5 55%, #6aa84f 55%, #4a7a35 100%);
   }
 
@@ -133,6 +134,7 @@
   .card-logica{ --card-accent:#f4c430; }
   .card-blocos{ --card-accent:#9c6ad4; }
   .card-corrida{ --card-accent:#c26a3e; }
+  .card-ritmo{ --card-accent:#4ad9d9; }
 
   footer{ font-size:11px; color:var(--text-dim); text-align:center; }
 </style>
@@ -239,6 +241,22 @@
       <div class="card-body">
         <h2 class="card-title">Corrida de<br>Vagonete</h2>
         <p class="card-desc">Pule pedras e agache nas estalactites num túnel de minério sem fim.</p>
+        <span class="card-cta">JOGAR →</span>
+      </div>
+    </a>
+
+    <a class="card card-ritmo" href="./ritmo-dos-blocos/">
+      <div class="card-screen">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="12" height="12" fill="#6aa84f"/>
+          <rect x="26" y="8" width="12" height="44" fill="#2a9d9d"/>
+          <rect x="44" y="8" width="12" height="28" fill="#c99a1e"/>
+          <rect x="0" y="44" width="64" height="3" fill="#4ad9d9"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <h2 class="card-title">Ritmo dos<br>Blocos</h2>
+        <p class="card-desc">Suba uma música sua e jogue uma fase de blocos gerada no ritmo dela.</p>
         <span class="card-cta">JOGAR →</span>
       </div>
     </a>

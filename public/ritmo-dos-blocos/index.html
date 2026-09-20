@@ -110,6 +110,63 @@
   .error-msg{ font-size:15px; color:var(--redstone); text-align:center; margin:0; }
   .best-line{ font-size:14px; color:#4a4a3a; }
 
+  .save-box{
+    width:100%;
+    background:#eceadd;
+    border:2px solid #8b8b8b;
+    padding:10px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .save-toggle-line{ margin:0; font-size:14px; color:#2b2b1e; }
+  .save-toggle-line label{ display:flex; align-items:center; gap:6px; cursor:pointer; }
+  .save-form{ display:flex; flex-wrap:wrap; gap:6px; }
+  .save-form input[type=text], .save-form input[type=password]{
+    flex:1;
+    min-width:90px;
+    font-family:'VT323', monospace;
+    font-size:15px;
+    padding:6px 8px;
+    border:2px solid #8b8b8b;
+  }
+  .save-status{ margin:0; font-size:13px; }
+  .save-status.ok{ color:var(--grass-dark); }
+  .save-status.err{ color:var(--redstone); }
+
+  .songs-box{
+    width:100%;
+    background:#eceadd;
+    border:2px solid #8b8b8b;
+    padding:12px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .songs-title{ margin:0; font-family:'Press Start 2P', monospace; font-size:10px; color:#4a4a3a; }
+  .songs-empty{ margin:0; font-size:14px; color:#4a4a3a; }
+  .songs-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+  .song-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    background:var(--slot-light);
+    border:2px solid #3a3a3a;
+    padding:6px 10px;
+  }
+  .song-row .song-title{ font-size:15px; color:#2b2b1e; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .song-row .song-actions{ display:flex; gap:6px; flex-shrink:0; }
+  .song-row button{
+    font-family:'Press Start 2P', monospace;
+    font-size:8px;
+    padding:6px 8px;
+    border:2px solid #3a3a3a;
+    cursor:pointer;
+  }
+  .song-row .play-btn{ background:var(--grass-dark); color:#f4f4e4; }
+  .song-row .del-btn{ background:var(--slot-light); color:var(--redstone); }
+
   .spinner-label{
     font-family:'Press Start 2P', monospace;
     font-size:11px;
@@ -252,15 +309,34 @@
     </header>
 
     <div class="screen" id="screenUpload">
-      <div class="upload-box">
+      <div class="upload-box" id="uploadBox">
         <p>Escolha um arquivo de áudio do seu computador (mp3, wav, ogg...)</p>
         <label class="file-label" for="fileInput">Escolher Música</label>
         <input type="file" id="fileInput" accept="audio/*">
         <p class="song-name" id="songName"></p>
         <p class="error-msg" id="errorMsg" hidden></p>
       </div>
+
+      <div class="save-box" id="saveBox" hidden>
+        <p class="save-toggle-line">
+          <label><input type="checkbox" id="saveToggle"> Salvar essa música na nuvem (pra tocar depois, até no celular)</label>
+        </p>
+        <div class="save-form" id="saveForm" hidden>
+          <input type="text" id="saveUser" placeholder="usuário" autocomplete="username">
+          <input type="password" id="savePass" placeholder="senha" autocomplete="current-password">
+          <button class="btn-ghost" id="saveBtn" type="button">Salvar</button>
+        </div>
+        <p class="save-status" id="saveStatus" hidden></p>
+      </div>
+
+      <div class="songs-box" id="songsBox">
+        <p class="songs-title">MINHAS MÚSICAS</p>
+        <p class="songs-empty" id="songsEmpty">Nenhuma música salva ainda.</p>
+        <ul class="songs-list" id="songsList"></ul>
+      </div>
+
       <p class="best-line" id="bestLine" hidden>Seu recorde: <strong id="bestValue">0</strong></p>
-      <p class="hint">O áudio fica só no seu navegador — nada é enviado pra nenhum servidor.</p>
+      <p class="hint" id="privacyHint">O áudio processado na hora fica só no seu navegador. Só vai pra nuvem se você marcar "salvar".</p>
     </div>
 
     <div class="screen" id="screenProcessing" hidden>
@@ -321,6 +397,7 @@
 (function(){
   "use strict";
 
+  var API_BASE = 'https://labirinto-das-sombras.mosquito38.workers.dev';
   var X_SLOTS = 3;
   var MIN_GAP_SEC = 0.16;
   var BEST_KEY = 'ritmo-dos-blocos-best-v1';
@@ -353,6 +430,28 @@
   var errorMsg = document.getElementById('errorMsg');
   var bestLine = document.getElementById('bestLine');
   var bestValue = document.getElementById('bestValue');
+  var uploadBox = document.getElementById('uploadBox');
+  var saveBox = document.getElementById('saveBox');
+  var saveToggle = document.getElementById('saveToggle');
+  var saveForm = document.getElementById('saveForm');
+  var saveUser = document.getElementById('saveUser');
+  var savePass = document.getElementById('savePass');
+  var saveBtn = document.getElementById('saveBtn');
+  var saveStatus = document.getElementById('saveStatus');
+  var songsBox = document.getElementById('songsBox');
+  var songsEmpty = document.getElementById('songsEmpty');
+  var songsList = document.getElementById('songsList');
+  var privacyHint = document.getElementById('privacyHint');
+
+  var isMobile = window.matchMedia('(max-width: 640px)').matches ||
+    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile) {
+    uploadBox.hidden = true;
+    saveBox.hidden = true;
+    privacyHint.textContent = 'Escolha uma música salva na lista abaixo pra jogar.';
+  }
+
+  var currentFile = null;
   var screens = {
     upload: document.getElementById('screenUpload'),
     processing: document.getElementById('screenProcessing'),
@@ -474,30 +573,51 @@
     errorMsg.hidden = true;
     songNameEl.textContent = '';
     fileInput.value = '';
+    currentFile = null;
+    saveBox.hidden = true;
+    saveToggle.checked = false;
+    saveForm.hidden = true;
+    saveStatus.hidden = true;
     if (sourceNode) { try { sourceNode.stop(); } catch (e) {} sourceNode = null; }
     game.playing = false;
+    loadSongsList();
+  }
+
+  function ensureAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx.resume();
+    return audioCtx;
+  }
+
+  function processArrayBuffer(arrayBuffer, onError) {
+    ensureAudioCtx().decodeAudioData(arrayBuffer).then(function(buffer) {
+      audioBuffer = buffer;
+      var channelData = buffer.getChannelData(0);
+      rawBeats = detectBeats(channelData, buffer.sampleRate);
+      rawDuration = buffer.duration;
+      showDifficultyScreen();
+    }).catch(function() {
+      onError('Não consegui processar esse áudio. Tente outro.');
+    });
   }
 
   fileInput.addEventListener('change', function(e) {
     var file = e.target.files && e.target.files[0];
     if (!file) return;
+    currentFile = file;
     songNameEl.textContent = file.name;
     errorMsg.hidden = true;
-    showScreen('processing');
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!isMobile) {
+      saveBox.hidden = false;
+      saveToggle.checked = false;
+      saveForm.hidden = true;
+      saveStatus.hidden = true;
     }
-    audioCtx.resume();
+    showScreen('processing');
     var reader = new FileReader();
     reader.onload = function() {
-      audioCtx.decodeAudioData(reader.result).then(function(buffer) {
-        audioBuffer = buffer;
-        var channelData = buffer.getChannelData(0);
-        rawBeats = detectBeats(channelData, buffer.sampleRate);
-        rawDuration = buffer.duration;
-        showDifficultyScreen();
-      }).catch(function() {
-        errorMsg.textContent = 'Não consegui processar esse arquivo. Tente outro.';
+      processArrayBuffer(reader.result, function(msg) {
+        errorMsg.textContent = msg;
         errorMsg.hidden = false;
         showScreen('upload');
       });
@@ -509,6 +629,122 @@
     };
     reader.readAsArrayBuffer(file);
   });
+
+  saveToggle.addEventListener('change', function() {
+    saveForm.hidden = !saveToggle.checked;
+  });
+
+  saveBtn.addEventListener('click', function() {
+    if (!currentFile) return;
+    var user = saveUser.value.trim(), pass = savePass.value;
+    if (!user || !pass) {
+      saveStatus.className = 'save-status err';
+      saveStatus.textContent = 'Preencha usuário e senha.';
+      saveStatus.hidden = false;
+      return;
+    }
+    saveBtn.disabled = true;
+    saveStatus.className = 'save-status';
+    saveStatus.textContent = 'Salvando...';
+    saveStatus.hidden = false;
+    var fd = new FormData();
+    fd.append('file', currentFile, currentFile.name);
+    fd.append('name', currentFile.name);
+    fetch(API_BASE + '/api/songs', {
+      method: 'POST',
+      headers: { 'Authorization': 'Basic ' + btoa(user + ':' + pass) },
+      body: fd
+    }).then(function(res) {
+      return res.json().then(function(data) { return { ok: res.ok, data: data }; });
+    }).then(function(r) {
+      saveBtn.disabled = false;
+      if (r.ok) {
+        saveStatus.className = 'save-status ok';
+        saveStatus.textContent = 'Salva! Já aparece em "Minhas Músicas".';
+        savePass.value = '';
+        loadSongsList();
+      } else {
+        saveStatus.className = 'save-status err';
+        saveStatus.textContent = r.data.error || 'Não consegui salvar.';
+      }
+    }).catch(function() {
+      saveBtn.disabled = false;
+      saveStatus.className = 'save-status err';
+      saveStatus.textContent = 'Falha de conexão. Tente de novo.';
+    });
+  });
+
+  function fmtSize(bytes) {
+    return (bytes / (1024 * 1024)).toFixed(1) + 'MB';
+  }
+
+  function loadSongsList() {
+    fetch(API_BASE + '/api/songs').then(function(res) { return res.json(); }).then(function(data) {
+      songsList.innerHTML = '';
+      var songs = data.songs || [];
+      songsEmpty.hidden = songs.length > 0;
+      songs.forEach(function(s) {
+        var li = document.createElement('li');
+        li.className = 'song-row';
+        var title = document.createElement('span');
+        title.className = 'song-title';
+        title.textContent = s.name + ' (' + fmtSize(s.size) + ')';
+        var actions = document.createElement('span');
+        actions.className = 'song-actions';
+        var playBtn = document.createElement('button');
+        playBtn.className = 'play-btn';
+        playBtn.type = 'button';
+        playBtn.textContent = 'TOCAR';
+        playBtn.addEventListener('click', function() { playSavedSong(s.id, s.name); });
+        var delBtn = document.createElement('button');
+        delBtn.className = 'del-btn';
+        delBtn.type = 'button';
+        delBtn.textContent = 'X';
+        delBtn.addEventListener('click', function() { deleteSavedSong(s.id); });
+        actions.appendChild(playBtn);
+        if (!isMobile) actions.appendChild(delBtn);
+        li.appendChild(title);
+        li.appendChild(actions);
+        songsList.appendChild(li);
+      });
+    }).catch(function() {});
+  }
+
+  function playSavedSong(id, name) {
+    songNameEl.textContent = name;
+    errorMsg.hidden = true;
+    showScreen('processing');
+    fetch(API_BASE + '/api/songs/' + id).then(function(res) {
+      if (!res.ok) throw new Error('not found');
+      return res.arrayBuffer();
+    }).then(function(buf) {
+      processArrayBuffer(buf, function(msg) {
+        errorMsg.textContent = msg;
+        errorMsg.hidden = false;
+        showScreen('upload');
+      });
+    }).catch(function() {
+      errorMsg.textContent = 'Não consegui carregar essa música salva.';
+      errorMsg.hidden = false;
+      showScreen('upload');
+    });
+  }
+
+  function deleteSavedSong(id) {
+    var user = window.prompt('Usuário pra apagar:');
+    if (!user) return;
+    var pass = window.prompt('Senha:');
+    if (!pass) return;
+    fetch(API_BASE + '/api/songs/' + id, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Basic ' + btoa(user + ':' + pass) }
+    }).then(function(res) {
+      if (res.ok) loadSongsList();
+      else window.alert('Não consegui apagar (usuário/senha errados?).');
+    }).catch(function() { window.alert('Falha de conexão.'); });
+  }
+
+  loadSongsList();
 
   function setDifficulty(key) {
     selectedDifficulty = key;

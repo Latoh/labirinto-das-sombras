@@ -1,10 +1,15 @@
 {
   "name": "labirinto-das-sombras",
+  "main": "worker.js",
   "compatibility_date": "2026-09-18",
   "observability": {
     "enabled": true
   },
   "assets": {
-    "directory": "public"
-  }
+    "directory": "public",
+    "binding": "ASSETS"
+  },
+  "r2_buckets": [
+    { "binding": "SONGS_BUCKET", "bucket_name": "labirinto-songs" }
+  ]
 }

@@ -242,14 +242,22 @@
   var STORAGE_KEY = 'sequencia-blocos-progress-v1';
 
   var BLOCKS = {
-    grass:    { fill:'#6aa84f', draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#6aa84f"/><rect width="'+s+'" height="'+(s*0.28)+'" fill="#8fcf6a"/>'; } },
-    stone:    { fill:'#9c9c9c', draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#9c9c9c"/><circle cx="'+(s*0.3)+'" cy="'+(s*0.35)+'" r="'+(s*0.07)+'" fill="#7a7a7a"/><circle cx="'+(s*0.65)+'" cy="'+(s*0.6)+'" r="'+(s*0.09)+'" fill="#7a7a7a"/>'; } },
-    diamond:  { fill:'#4ad9d9', draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#2a9d9d"/><polygon points="'+(s*0.5)+',' +(s*0.18)+' '+(s*0.82)+',' +(s*0.5)+' '+(s*0.5)+',' +(s*0.82)+' '+(s*0.18)+',' +(s*0.5)+'" fill="#4ad9d9"/>'; } },
-    gold:     { fill:'#f4c430', draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#c99a1e"/><rect x="'+(s*0.15)+'" y="'+(s*0.15)+'" width="'+(s*0.7)+'" height="'+(s*0.7)+'" fill="#f4c430"/>'; } },
-    wood:     { fill:'#a06a3c', draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#a06a3c"/><rect x="0" y="'+(s*0.3)+'" width="'+s+'" height="'+(s*0.12)+'" fill="#7a4d29"/><rect x="0" y="'+(s*0.62)+'" width="'+s+'" height="'+(s*0.12)+'" fill="#7a4d29"/>'; } },
-    water:    { fill:'#4d96e8', draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#3a78c2"/><path d="M0 '+(s*0.35)+' Q '+(s*0.25)+' '+(s*0.2)+' '+(s*0.5)+' '+(s*0.35)+' T '+s+' '+(s*0.35)+' V '+s+' H 0 Z" fill="#4d96e8"/>'; } },
-    lava:     { fill:'#e8622f', draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#a83a1e"/><circle cx="'+(s*0.35)+'" cy="'+(s*0.4)+'" r="'+(s*0.16)+'" fill="#e8622f"/><circle cx="'+(s*0.65)+'" cy="'+(s*0.6)+'" r="'+(s*0.14)+'" fill="#f2994a"/>'; } },
-    redstone: { fill:'#c53a2a', draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#7a2a1e"/><circle cx="'+(s*0.5)+'" cy="'+(s*0.5)+'" r="'+(s*0.22)+'" fill="#c53a2a"/>'; } }
+    grass:    { family:'green',  draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#6aa84f"/><rect width="'+s+'" height="'+(s*0.28)+'" fill="#8fcf6a"/>'; } },
+    stone:    { family:'gray',   draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#9c9c9c"/><circle cx="'+(s*0.3)+'" cy="'+(s*0.35)+'" r="'+(s*0.07)+'" fill="#7a7a7a"/><circle cx="'+(s*0.65)+'" cy="'+(s*0.6)+'" r="'+(s*0.09)+'" fill="#7a7a7a"/>'; } },
+    diamond:  { family:'cyan',   draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#2a9d9d"/><polygon points="'+(s*0.5)+',' +(s*0.18)+' '+(s*0.82)+',' +(s*0.5)+' '+(s*0.5)+',' +(s*0.82)+' '+(s*0.18)+',' +(s*0.5)+'" fill="#4ad9d9"/>'; } },
+    gold:     { family:'yellow', draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#c99a1e"/><rect x="'+(s*0.15)+'" y="'+(s*0.15)+'" width="'+(s*0.7)+'" height="'+(s*0.7)+'" fill="#f4c430"/>'; } },
+    wood:     { family:'brown',  draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#a06a3c"/><rect x="0" y="'+(s*0.3)+'" width="'+s+'" height="'+(s*0.12)+'" fill="#7a4d29"/><rect x="0" y="'+(s*0.62)+'" width="'+s+'" height="'+(s*0.12)+'" fill="#7a4d29"/>'; } },
+    water:    { family:'cyan',   draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#3a78c2"/><path d="M0 '+(s*0.35)+' Q '+(s*0.25)+' '+(s*0.2)+' '+(s*0.5)+' '+(s*0.35)+' T '+s+' '+(s*0.35)+' V '+s+' H 0 Z" fill="#4d96e8"/>'; } },
+    lava:     { family:'red',    draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#a83a1e"/><circle cx="'+(s*0.35)+'" cy="'+(s*0.4)+'" r="'+(s*0.16)+'" fill="#e8622f"/><circle cx="'+(s*0.65)+'" cy="'+(s*0.6)+'" r="'+(s*0.14)+'" fill="#f2994a"/>'; } },
+    redstone: { family:'red',    draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#7a2a1e"/><circle cx="'+(s*0.5)+'" cy="'+(s*0.5)+'" r="'+(s*0.22)+'" fill="#c53a2a"/>'; } },
+    emerald:  { family:'green',  draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#1e7a4a"/><polygon points="'+(s*0.5)+',' +(s*0.2)+' '+(s*0.78)+',' +(s*0.5)+' '+(s*0.5)+',' +(s*0.8)+' '+(s*0.22)+',' +(s*0.5)+'" fill="#2f9e57"/>'; } },
+    lapis:    { family:'cyan',   draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#2a4a8f"/><rect x="'+(s*0.2)+'" y="'+(s*0.2)+'" width="'+(s*0.14)+'" height="'+(s*0.14)+'" fill="#f4c430"/><rect x="'+(s*0.6)+'" y="'+(s*0.55)+'" width="'+(s*0.12)+'" height="'+(s*0.12)+'" fill="#f4c430"/><rect x="'+(s*0.55)+'" y="'+(s*0.2)+'" width="'+(s*0.1)+'" height="'+(s*0.1)+'" fill="#f4c430"/>'; } },
+    iron:     { family:'gray',   draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#d8d4c8"/><circle cx="'+(s*0.3)+'" cy="'+(s*0.3)+'" r="'+(s*0.06)+'" fill="#a8a498"/><circle cx="'+(s*0.7)+'" cy="'+(s*0.3)+'" r="'+(s*0.06)+'" fill="#a8a498"/><circle cx="'+(s*0.3)+'" cy="'+(s*0.7)+'" r="'+(s*0.06)+'" fill="#a8a498"/><circle cx="'+(s*0.7)+'" cy="'+(s*0.7)+'" r="'+(s*0.06)+'" fill="#a8a498"/>'; } },
+    coal:     { family:'gray',   draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#332e28"/><polygon points="'+(s*0.28)+',' +(s*0.32)+' '+(s*0.4)+',' +(s*0.3)+' '+(s*0.36)+',' +(s*0.44)+'" fill="#1a1712"/><polygon points="'+(s*0.62)+',' +(s*0.58)+' '+(s*0.76)+',' +(s*0.56)+' '+(s*0.7)+',' +(s*0.7)+'" fill="#1a1712"/>'; } },
+    sand:     { family:'yellow', draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#e0c988"/><rect y="'+(s*0.35)+'" width="'+s+'" height="'+(s*0.1)+'" fill="#cbb06a"/><rect y="'+(s*0.65)+'" width="'+s+'" height="'+(s*0.1)+'" fill="#cbb06a"/>'; } },
+    dirt:     { family:'brown',  draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#7a5230"/><circle cx="'+(s*0.25)+'" cy="'+(s*0.3)+'" r="'+(s*0.05)+'" fill="#5e3f24"/><circle cx="'+(s*0.6)+'" cy="'+(s*0.5)+'" r="'+(s*0.06)+'" fill="#5e3f24"/><circle cx="'+(s*0.35)+'" cy="'+(s*0.7)+'" r="'+(s*0.05)+'" fill="#5e3f24"/>'; } },
+    ice:      { family:'cyan',   draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#b8e6f0"/><path d="M'+(s*0.2)+' '+(s*0.2)+' L '+(s*0.5)+' '+(s*0.5)+' L '+(s*0.3)+' '+(s*0.8)+' M '+(s*0.5)+' '+(s*0.5)+' L '+(s*0.8)+' '+(s*0.3)+'" stroke="#ffffff" stroke-width="'+(s*0.05)+'" fill="none"/>'; } },
+    snow:     { family:'white',  draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#f4f4f4"/><ellipse cx="'+(s*0.3)+'" cy="'+(s*0.82)+'" rx="'+(s*0.1)+'" ry="'+(s*0.05)+'" fill="#cfe6f0"/><ellipse cx="'+(s*0.68)+'" cy="'+(s*0.85)+'" rx="'+(s*0.12)+'" ry="'+(s*0.05)+'" fill="#cfe6f0"/>'; } }
   };
   var BLOCK_IDS = Object.keys(BLOCKS);
 
@@ -278,20 +286,55 @@
     return a;
   }
 
-  function difficultyFor(level) {
-    var period = level <= 39 ? 2 : (level <= 79 ? 3 : 4);
-    var length = Math.min(12, 5 + Math.floor((level - 1) / 10) + Math.floor(Math.random() * 2));
-    var numOptions = level <= 20 ? 3 : (level <= 60 ? 4 : 5);
-    return { period: period, length: length, numOptions: numOptions };
+  function patternValue(type, unit, index) {
+    var P = unit.length;
+    if (type === 'grouped') {
+      var g = 2;
+      return unit[Math.floor(index / g) % P];
+    }
+    if (type === 'bounce') {
+      var path = unit.concat(unit.slice(1, P - 1).reverse());
+      return path[index % path.length];
+    }
+    return unit[index % P];
+  }
+
+  function tierParams(level) {
+    var t = Math.floor((level - 1) / 5);
+    var period = Math.min(6, 2 + Math.floor(t / 3));
+    var length = Math.min(14, 6 + t);
+    var numOptions = Math.min(8, 3 + Math.floor(t / 3));
+    var types = ['repeat'];
+    if (t >= 3) types.push('bounce');
+    if (t >= 8) types.push('grouped');
+    var biasFamily = t >= 5;
+    return { tier: t, period: period, length: length, numOptions: numOptions, types: types, biasFamily: biasFamily };
+  }
+
+  function pickDistractors(correctId, count, biasFamily) {
+    var pool = BLOCK_IDS.filter(function(id) { return id !== correctId; });
+    var result = [];
+    if (biasFamily) {
+      var fam = BLOCKS[correctId].family;
+      var sameFamily = shuffle(pool.filter(function(id) { return BLOCKS[id].family === fam; }));
+      result = sameFamily.slice(0, count);
+    }
+    if (result.length < count) {
+      var rest = shuffle(pool.filter(function(id) { return result.indexOf(id) === -1; }));
+      result = result.concat(rest.slice(0, count - result.length));
+    }
+    return result;
   }
 
   function buildRound() {
     var level = game.round + 1;
-    var diff = difficultyFor(level);
+    var diff = tierParams(level);
+    var typeChoices = diff.types.filter(function(ty) { return ty !== 'bounce' || diff.period >= 3; });
+    var type = typeChoices[Math.floor(Math.random() * typeChoices.length)];
     var unit = shuffle(BLOCK_IDS).slice(0, diff.period);
     var seq = [];
-    for (var i = 0; i < diff.length - 1; i++) seq.push(unit[i % diff.period]);
-    var correctId = unit[(diff.length - 1) % diff.period];
+    for (var i = 0; i < diff.length - 1; i++) seq.push(patternValue(type, unit, i));
+    var correctId = patternValue(type, unit, diff.length - 1);
 
     seqEl.innerHTML = '';
     seq.forEach(function(id) {
@@ -305,7 +348,7 @@
     qTile.textContent = '?';
     seqEl.appendChild(qTile);
 
-    var distractors = shuffle(BLOCK_IDS.filter(function(id) { return id !== correctId; })).slice(0, diff.numOptions - 1);
+    var distractors = pickDistractors(correctId, diff.numOptions - 1, diff.biasFamily);
     var options = shuffle([correctId].concat(distractors));
 
     optsEl.innerHTML = '';

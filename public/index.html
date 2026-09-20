@@ -92,7 +92,9 @@
   .card-labirinto .card-screen{
     background:radial-gradient(ellipse at 50% 40%, #241a12 0%, #0d0a08 70%);
   }
-  .card-caca .card-screen{
+  .card-caca .card-screen,
+  .card-erros .card-screen,
+  .card-logica .card-screen{
     background:linear-gradient(180deg, #8fd1ea 0%, #bfe8f5 55%, #6aa84f 55%, #4a7a35 100%);
   }
 
@@ -125,6 +127,8 @@
 
   .card-labirinto{ --card-accent:var(--ember); }
   .card-caca{ --card-accent:var(--grass); }
+  .card-erros{ --card-accent:var(--diamond); }
+  .card-logica{ --card-accent:#f4c430; }
 
   footer{ font-size:11px; color:var(--text-dim); text-align:center; }
 </style>
@@ -165,6 +169,39 @@
       <div class="card-body">
         <h2 class="card-title">Caça-Palavras<br>do Minecraft</h2>
         <p class="card-desc">Ache 12 palavras do Minecraft escondidas na grade. Muda a cada partida.</p>
+        <span class="card-cta">JOGAR →</span>
+      </div>
+    </a>
+
+    <a class="card card-erros" href="./sete-erros/">
+      <div class="card-screen">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="14" width="20" height="20" rx="2" fill="#eceadd" stroke="#3a3a3a" stroke-width="2"/>
+          <rect x="36" y="14" width="20" height="20" rx="2" fill="#eceadd" stroke="#3a3a3a" stroke-width="2"/>
+          <circle cx="18" cy="24" r="4" fill="#8b3a2a"/>
+          <circle cx="46" cy="24" r="4" fill="#3d6fa8"/>
+          <circle cx="32" cy="44" r="9" fill="none" stroke="#4ad9d9" stroke-width="3"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <h2 class="card-title">7 Erros do<br>Minecraft</h2>
+        <p class="card-desc">Duas cenas quase iguais. Ache as 7 diferenças escondidas nelas.</p>
+        <span class="card-cta">JOGAR →</span>
+      </div>
+    </a>
+
+    <a class="card card-logica" href="./sequencia-blocos/">
+      <div class="card-screen">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="26" width="14" height="14" fill="#6aa84f"/>
+          <rect x="24" y="26" width="14" height="14" fill="#9c9c9c"/>
+          <rect x="42" y="26" width="14" height="14" fill="none" stroke="#8b8b8b" stroke-width="3" stroke-dasharray="4 3"/>
+          <text x="49" y="37" font-size="12" fill="#8b8b8b" font-family="monospace" text-anchor="middle">?</text>
+        </svg>
+      </div>
+      <div class="card-body">
+        <h2 class="card-title">Sequência<br>dos Blocos</h2>
+        <p class="card-desc">Jogo de lógica pra crianças: descubra o padrão e complete a fileira.</p>
         <span class="card-cta">JOGAR →</span>
       </div>
     </a>

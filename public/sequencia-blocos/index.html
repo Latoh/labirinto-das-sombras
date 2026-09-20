@@ -176,6 +176,20 @@
   }
   .menu-link:hover{ color:var(--grass-dark); }
 
+  .top-row{ display:flex; justify-content:space-between; gap:8px; }
+  .reset-link{
+    font-family:'Press Start 2P', monospace;
+    font-size:9px;
+    color:#4a4a3a;
+    text-decoration:none;
+    background:var(--slot-light);
+    border:2px solid #3a3a3a;
+    box-shadow:inset 1px 1px 0 #fff, inset -1px -1px 0 var(--slot-dark);
+    padding:6px 10px;
+    cursor:pointer;
+  }
+  .reset-link:hover{ color:var(--redstone); }
+
   [hidden]{ display:none !important; }
 </style>
 </head>
@@ -184,7 +198,10 @@
 
 <div class="wrap">
   <div class="panel">
-    <a class="menu-link" href="../">← MENU</a>
+    <div class="top-row">
+      <a class="menu-link" href="../">← MENU</a>
+      <button class="reset-link" id="resetProgress" type="button">↺ RECOMEÇAR</button>
+    </div>
     <header>
       <h1>Sequência<br>dos Blocos</h1>
       <p class="subtitle">Olhe o padrão e escolha o bloco que continua a fileira!</p>
@@ -192,8 +209,8 @@
 
     <div class="stats" role="status" aria-live="polite">
       <div class="stat">
-        <span class="stat-label">RODADA</span>
-        <span class="stat-value" id="statRound">1/8</span>
+        <span class="stat-label">NÍVEL</span>
+        <span class="stat-value" id="statRound">1/100</span>
       </div>
       <div class="stat">
         <span class="stat-label">ESTRELAS</span>
@@ -211,8 +228,8 @@
 
 <div class="win-overlay" id="winOverlay" hidden>
   <div class="win-card">
-    <p class="win-title">VOCÊ É UM<br>MESTRE DA LÓGICA!</p>
-    <div class="win-stars" id="winStars">★★★★★★★★</div>
+    <p class="win-title">VOCÊ COMPLETOU<br>OS 100 NÍVEIS!</p>
+    <div class="win-stars" id="winStars">★ 100</div>
     <button class="btn" id="winRestart" type="button">Jogar De Novo</button>
   </div>
 </div>
@@ -221,7 +238,8 @@
 (function(){
   "use strict";
 
-  var ROUNDS_TOTAL = 8;
+  var ROUNDS_TOTAL = 100;
+  var STORAGE_KEY = 'sequencia-blocos-progress-v1';
 
   var BLOCKS = {
     grass:    { fill:'#6aa84f', draw:function(s){ return '<rect width="'+s+'" height="'+s+'" fill="#6aa84f"/><rect width="'+s+'" height="'+(s*0.28)+'" fill="#8fcf6a"/>'; } },
@@ -260,13 +278,20 @@
     return a;
   }
 
+  function difficultyFor(level) {
+    var period = level <= 39 ? 2 : (level <= 79 ? 3 : 4);
+    var length = Math.min(12, 5 + Math.floor((level - 1) / 10) + Math.floor(Math.random() * 2));
+    var numOptions = level <= 20 ? 3 : (level <= 60 ? 4 : 5);
+    return { period: period, length: length, numOptions: numOptions };
+  }
+
   function buildRound() {
-    var period = Math.random() < 0.5 ? 2 : 3;
-    var length = [6, 7, 8][Math.floor(Math.random() * 3)];
-    var unit = shuffle(BLOCK_IDS).slice(0, period);
+    var level = game.round + 1;
+    var diff = difficultyFor(level);
+    var unit = shuffle(BLOCK_IDS).slice(0, diff.period);
     var seq = [];
-    for (var i = 0; i < length - 1; i++) seq.push(unit[i % period]);
-    var correctId = unit[(length - 1) % period];
+    for (var i = 0; i < diff.length - 1; i++) seq.push(unit[i % diff.period]);
+    var correctId = unit[(diff.length - 1) % diff.period];
 
     seqEl.innerHTML = '';
     seq.forEach(function(id) {
@@ -280,10 +305,11 @@
     qTile.textContent = '?';
     seqEl.appendChild(qTile);
 
-    var distractors = shuffle(BLOCK_IDS.filter(function(id) { return id !== correctId; })).slice(0, 3);
+    var distractors = shuffle(BLOCK_IDS.filter(function(id) { return id !== correctId; })).slice(0, diff.numOptions - 1);
     var options = shuffle([correctId].concat(distractors));
 
     optsEl.innerHTML = '';
+    optsEl.style.gridTemplateColumns = 'repeat(' + options.length + ', 1fr)';
     options.forEach(function(id) {
       var btn = document.createElement('button');
       btn.type = 'button';
@@ -298,7 +324,7 @@
     game.locked = false;
     msgEl.textContent = ' ';
     msgEl.className = 'msg';
-    statRound.textContent = (game.round + 1) + '/' + ROUNDS_TOTAL;
+    statRound.textContent = level + '/' + ROUNDS_TOTAL;
   }
 
   function onPick(id, btn) {
@@ -311,6 +337,7 @@
       Array.prototype.forEach.call(optsEl.children, function(b) { b.disabled = true; });
       game.stars++;
       statStars.textContent = game.stars;
+      saveProgress();
       setTimeout(nextRound, 900);
     } else {
       btn.classList.add('wrong');
@@ -323,11 +350,34 @@
   function nextRound() {
     game.round++;
     if (game.round >= ROUNDS_TOTAL) {
-      winStars.textContent = new Array(game.stars + 1).join('★');
+      winStars.textContent = '★ ' + game.stars;
       winOverlay.hidden = false;
+      clearProgress();
       return;
     }
     buildRound();
+  }
+
+  function saveProgress() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ round: game.round, stars: game.stars }));
+    } catch (e) {}
+  }
+
+  function clearProgress() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  }
+
+  function loadProgress() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      var data = JSON.parse(raw);
+      if (typeof data.round === 'number' && data.round >= 0 && data.round < ROUNDS_TOTAL && typeof data.stars === 'number') {
+        return data;
+      }
+    } catch (e) {}
+    return null;
   }
 
   function startNewGame() {
@@ -335,12 +385,27 @@
     game.stars = 0;
     statStars.textContent = 0;
     winOverlay.hidden = true;
+    clearProgress();
     buildRound();
   }
 
   document.getElementById('winRestart').addEventListener('click', startNewGame);
+  document.getElementById('resetProgress').addEventListener('click', function() {
+    if (window.confirm('Recomeçar do nível 1? Seu progresso atual vai ser apagado.')) {
+      startNewGame();
+    }
+  });
 
-  startNewGame();
+  var saved = loadProgress();
+  if (saved) {
+    game.round = saved.round;
+    game.stars = saved.stars;
+    statStars.textContent = game.stars;
+    winOverlay.hidden = true;
+    buildRound();
+  } else {
+    startNewGame();
+  }
 })();
 </script>
 

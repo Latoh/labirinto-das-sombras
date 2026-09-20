@@ -310,18 +310,14 @@
 
     <div class="screen" id="screenUpload">
       <div class="upload-box" id="uploadBox">
-        <p>Escolha um arquivo de áudio do seu computador (mp3, wav, ogg...)</p>
+        <p>Enviar música nova (fica salva, não toca na hora)</p>
         <label class="file-label" for="fileInput">Escolher Música</label>
         <input type="file" id="fileInput" accept="audio/*">
         <p class="song-name" id="songName"></p>
-        <p class="error-msg" id="errorMsg" hidden></p>
       </div>
 
       <div class="save-box" id="saveBox" hidden>
-        <p class="save-toggle-line">
-          <label><input type="checkbox" id="saveToggle"> Salvar essa música na nuvem (pra tocar depois, até no celular)</label>
-        </p>
-        <div class="save-form" id="saveForm" hidden>
+        <div class="save-form" id="saveForm">
           <input type="text" id="saveUser" placeholder="usuário" autocomplete="username">
           <input type="password" id="savePass" placeholder="senha" autocomplete="current-password">
           <button class="btn-ghost" id="saveBtn" type="button">Salvar</button>
@@ -333,10 +329,11 @@
         <p class="songs-title">MINHAS MÚSICAS</p>
         <p class="songs-empty" id="songsEmpty">Nenhuma música salva ainda.</p>
         <ul class="songs-list" id="songsList"></ul>
+        <p class="error-msg" id="errorMsg" hidden></p>
       </div>
 
       <p class="best-line" id="bestLine" hidden>Seu recorde: <strong id="bestValue">0</strong></p>
-      <p class="hint" id="privacyHint">O áudio processado na hora fica só no seu navegador. Só vai pra nuvem se você marcar "salvar".</p>
+      <p class="hint" id="privacyHint">Pra jogar, escolha uma música da lista "Minhas Músicas" acima.</p>
     </div>
 
     <div class="screen" id="screenProcessing" hidden>
@@ -432,7 +429,6 @@
   var bestValue = document.getElementById('bestValue');
   var uploadBox = document.getElementById('uploadBox');
   var saveBox = document.getElementById('saveBox');
-  var saveToggle = document.getElementById('saveToggle');
   var saveForm = document.getElementById('saveForm');
   var saveUser = document.getElementById('saveUser');
   var savePass = document.getElementById('savePass');
@@ -443,8 +439,8 @@
   var songsList = document.getElementById('songsList');
   var privacyHint = document.getElementById('privacyHint');
 
-  var isMobile = window.matchMedia('(max-width: 640px)').matches ||
-    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var isMobile = /Android|iPhone|iPod|Windows Phone/i.test(navigator.userAgent) ||
+    (window.matchMedia('(pointer: coarse)').matches && window.matchMedia('(max-width: 640px)').matches);
   if (isMobile) {
     uploadBox.hidden = true;
     saveBox.hidden = true;
@@ -575,8 +571,6 @@
     fileInput.value = '';
     currentFile = null;
     saveBox.hidden = true;
-    saveToggle.checked = false;
-    saveForm.hidden = true;
     saveStatus.hidden = true;
     if (sourceNode) { try { sourceNode.stop(); } catch (e) {} sourceNode = null; }
     game.playing = false;
@@ -606,32 +600,10 @@
     if (!file) return;
     currentFile = file;
     songNameEl.textContent = file.name;
-    errorMsg.hidden = true;
-    if (!isMobile) {
-      saveBox.hidden = false;
-      saveToggle.checked = false;
-      saveForm.hidden = true;
-      saveStatus.hidden = true;
-    }
-    showScreen('processing');
-    var reader = new FileReader();
-    reader.onload = function() {
-      processArrayBuffer(reader.result, function(msg) {
-        errorMsg.textContent = msg;
-        errorMsg.hidden = false;
-        showScreen('upload');
-      });
-    };
-    reader.onerror = function() {
-      errorMsg.textContent = 'Não consegui ler esse arquivo. Tente outro.';
-      errorMsg.hidden = false;
-      showScreen('upload');
-    };
-    reader.readAsArrayBuffer(file);
-  });
-
-  saveToggle.addEventListener('change', function() {
-    saveForm.hidden = !saveToggle.checked;
+    saveUser.value = '';
+    savePass.value = '';
+    saveStatus.hidden = true;
+    saveBox.hidden = false;
   });
 
   saveBtn.addEventListener('click', function() {
@@ -662,6 +634,10 @@
         saveStatus.className = 'save-status ok';
         saveStatus.textContent = 'Salva! Já aparece em "Minhas Músicas".';
         savePass.value = '';
+        currentFile = null;
+        fileInput.value = '';
+        songNameEl.textContent = '';
+        saveBox.hidden = true;
         loadSongsList();
       } else {
         saveStatus.className = 'save-status err';

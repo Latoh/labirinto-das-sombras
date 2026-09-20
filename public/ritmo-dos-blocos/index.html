@@ -535,10 +535,7 @@
     if (diff.beatSkip > 1) {
       beatTimes = beatTimes.filter(function(t, i) { return i % diff.beatSkip === 0; });
     }
-    if (beatTimes.length > 0 && beatTimes[0] < FIRST_TILE_DELAY) {
-      var shift = FIRST_TILE_DELAY - beatTimes[0];
-      beatTimes = beatTimes.map(function(t) { return t + shift; });
-    }
+    audioStartOffset = beatTimes.length > 0 ? Math.max(0, FIRST_TILE_DELAY - beatTimes[0]) : 0;
     var tiles = [];
     var prevSlot = Math.floor(X_SLOTS / 2);
     var skinIdx = 0;
@@ -560,6 +557,7 @@
   var rawBeats = [];
   var rawDuration = 0;
   var path = [];
+  var audioStartOffset = 0;
   var pathIndex = 0;
   var beatPulseIndex = 0;
   var songStartTime = 0;
@@ -777,7 +775,7 @@
     sourceNode = audioCtx.createBufferSource();
     sourceNode.buffer = audioBuffer;
     sourceNode.connect(audioCtx.destination);
-    var startAt = audioCtx.currentTime + 0.15;
+    var startAt = audioCtx.currentTime + 0.15 + audioStartOffset;
     songStartTime = startAt;
     sourceNode.start(startAt);
     sourceNode.onended = function() {

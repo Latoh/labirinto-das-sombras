@@ -395,6 +395,7 @@
   "use strict";
 
   var API_BASE = 'https://labirinto-das-sombras.mosquito38.workers.dev';
+  var FIRST_TILE_DELAY = 10;
   var X_SLOTS = 3;
   var MIN_GAP_SEC = 0.16;
   var BEST_KEY = 'ritmo-dos-blocos-best-v1';
@@ -533,6 +534,10 @@
     }
     if (diff.beatSkip > 1) {
       beatTimes = beatTimes.filter(function(t, i) { return i % diff.beatSkip === 0; });
+    }
+    if (beatTimes.length > 0 && beatTimes[0] < FIRST_TILE_DELAY) {
+      var shift = FIRST_TILE_DELAY - beatTimes[0];
+      beatTimes = beatTimes.map(function(t) { return t + shift; });
     }
     var tiles = [];
     var prevSlot = Math.floor(X_SLOTS / 2);

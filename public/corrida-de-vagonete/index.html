@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Corrida de Vagonete</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+  :root{
+    --sky:#8fd1ea;
+    --sky-2:#bfe8f5;
+    --grass:#6aa84f;
+    --grass-dark:#4a7a35;
+    --slot:#c6c6c6;
+    --slot-dark:#8b8b8b;
+    --slot-light:#e4e4e4;
+    --panel:#c6c6c6;
+    --ink:#2b2b1e;
+    --diamond:#4ad9d9;
+    --gold:#f4c430;
+    --redstone:#c53a2a;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--sky) 0%, var(--sky-2) 55%, var(--grass) 55%, var(--grass-dark) 100%);
+    background-attachment:fixed;
+    color:var(--ink);
+    font-family:'VT323', monospace;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding-inline:16px;
+    padding-block:28px;
+  }
+
+  .wrap{ width:100%; max-width:720px; }
+
+  .panel{
+    background:var(--panel);
+    border:4px solid #3a3a3a;
+    box-shadow:
+      inset 3px 3px 0 var(--slot-light),
+      inset -3px -3px 0 var(--slot-dark),
+      0 10px 0 rgba(0,0,0,0.25);
+    padding:18px 16px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .top-row{ display:flex; justify-content:space-between; gap:8px; }
+  .menu-link, .reset-link{
+    font-family:'Press Start 2P', monospace;
+    font-size:9px;
+    color:#4a4a3a;
+    text-decoration:none;
+    background:var(--slot-light);
+    border:2px solid #3a3a3a;
+    box-shadow:inset 1px 1px 0 #fff, inset -1px -1px 0 var(--slot-dark);
+    padding:6px 10px;
+    cursor:pointer;
+  }
+  .menu-link:hover, .reset-link:hover{ color:var(--grass-dark); }
+
+  header{ text-align:center; display:flex; flex-direction:column; gap:6px; }
+  h1{
+    font-family:'Press Start 2P', monospace;
+    font-size:clamp(14px, 4.6vw, 20px);
+    line-height:1.6;
+    margin:0;
+    color:var(--grass-dark);
+    text-shadow:2px 2px 0 #fff, 3px 3px 0 rgba(0,0,0,0.25);
+    text-wrap:balance;
+  }
+  .subtitle{ margin:0; font-size:16px; color:#4a4a3a; }
+
+  .stats{
+    display:flex;
+    justify-content:space-between;
+    gap:6px;
+    background:#8b8b8b;
+    border:3px solid #3a3a3a;
+    box-shadow:inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.25);
+    padding:8px 10px;
+  }
+  .stat{ display:flex; flex-direction:column; align-items:center; flex:1; gap:2px; }
+  .stat-label{ font-family:'Press Start 2P', monospace; font-size:7px; color:#2b2b1e; }
+  .stat-value{ font-size:19px; font-variant-numeric:tabular-nums; color:#1c1c14; font-weight:700; }
+
+  .board-frame{
+    position:relative;
+    width:100%;
+    background:#1a1420;
+    border:4px solid #3a3a3a;
+    box-shadow:inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.4);
+    aspect-ratio:700/260;
+    touch-action:none;
+    cursor:pointer;
+  }
+  canvas#game{ display:block; width:100%; height:100%; }
+
+  .controls-row{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+  }
+  .ctrl-btn{
+    font-family:'Press Start 2P', monospace;
+    font-size:10px;
+    color:#2b2b1e;
+    background:linear-gradient(180deg, var(--slot-light), var(--slot));
+    border:2px solid #3a3a3a;
+    box-shadow:inset 1px 1px 0 #fff, inset -2px -2px 0 var(--slot-dark);
+    padding:10px 16px;
+    cursor:pointer;
+    -webkit-user-select:none;
+    user-select:none;
+  }
+  .ctrl-btn:active{ transform:translateY(2px); box-shadow:none; }
+
+  .hint{ margin:0; font-size:13px; color:#4a4a3a; text-align:center; }
+  .key{
+    font-family:'VT323', monospace;
+    background:rgba(0,0,0,0.12);
+    border:1px solid #8b8b8b;
+    border-radius:3px;
+    padding:0 5px;
+  }
+
+  .game-overlay{
+    position:absolute; inset:0; background:rgba(10,10,6,0.78);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .game-card{
+    background:var(--panel); border:4px solid #3a3a3a;
+    box-shadow:inset 3px 3px 0 var(--slot-light), inset -3px -3px 0 var(--slot-dark);
+    padding:22px 20px; text-align:center; max-width:280px;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .game-title{ font-family:'Press Start 2P', monospace; font-size:13px; color:var(--redstone); margin:0; }
+  .game-stats{ display:flex; justify-content:center; gap:20px; }
+  .game-stats div{ display:flex; flex-direction:column; gap:2px; }
+  .game-stats span{ font-family:'Press Start 2P', monospace; font-size:7px; color:#4a4a3a; }
+  .game-stats strong{ font-size:20px; color:#1c1c14; }
+
+  .btn{
+    align-self:center;
+    font-family:'Press Start 2P', monospace;
+    font-size:11px;
+    color:#f4f4e4;
+    background:var(--grass-dark);
+    border:3px solid #2e4a20;
+    box-shadow:inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.3), 0 4px 0 #263f1a;
+    padding:12px 20px;
+    cursor:pointer;
+  }
+  .btn:active{ transform:translateY(3px); box-shadow:inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.3); }
+  .btn:focus-visible{ outline:3px solid var(--diamond); outline-offset:2px; }
+
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <div class="panel">
+    <div class="top-row">
+      <a class="menu-link" href="../">← MENU</a>
+      <button class="reset-link" id="resetBtn" type="button">↺ NOVO JOGO</button>
+    </div>
+    <header>
+      <h1>Corrida de<br>Vagonete</h1>
+      <p class="subtitle">Pule as pedras, agache nas estalactites!</p>
+    </header>
+
+    <div class="stats" role="status" aria-live="polite">
+      <div class="stat"><span class="stat-label">PONTOS</span><span class="stat-value" id="statScore">0</span></div>
+      <div class="stat"><span class="stat-label">RECORDE</span><span class="stat-value" id="statBest">0</span></div>
+    </div>
+
+    <div class="board-frame" id="boardFrame">
+      <canvas id="game" width="700" height="260"></canvas>
+      <div class="game-overlay" id="startOverlay">
+        <div class="game-card">
+          <p class="game-title">CORRIDA DE<br>VAGONETE</p>
+          <p class="hint">Toque, clique ou aperte<br><span class="key">ESPAÇO</span> pra pular</p>
+          <button class="btn" id="startBtn" type="button">Começar</button>
+        </div>
+      </div>
+      <div class="game-overlay" id="gameOverlay" hidden>
+        <div class="game-card">
+          <p class="game-title">BATEU!</p>
+          <div class="game-stats">
+            <div><span>PONTOS</span><strong id="finalScore">0</strong></div>
+            <div><span>RECORDE</span><strong id="finalBest">0</strong></div>
+          </div>
+          <button class="btn" id="restartBtn" type="button">Jogar De Novo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls-row">
+      <button class="ctrl-btn" id="btnJump" type="button">▲ PULAR</button>
+      <button class="ctrl-btn" id="btnDuck" type="button">▼ AGACHAR</button>
+    </div>
+
+    <p class="hint"><span class="key">ESPAÇO</span> / <span class="key">↑</span> pular · <span class="key">↓</span> agachar</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var W = 700, H = 260;
+  var GROUND_Y = 200;
+  var BEST_KEY = 'corrida-vagonete-best-v1';
+  var GRAVITY = 1900;
+  var JUMP_V = 640;
+  var CART_X = 70;
+  var CART_W = 36, CART_H_NORMAL = 26, CART_H_DUCK = 16;
+
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var boardFrame = document.getElementById('boardFrame');
+  var statScore = document.getElementById('statScore');
+  var statBest = document.getElementById('statBest');
+  var startOverlay = document.getElementById('startOverlay');
+  var gameOverlay = document.getElementById('gameOverlay');
+  var finalScore = document.getElementById('finalScore');
+  var finalBest = document.getElementById('finalBest');
+
+  var best = 0;
+  try { best = parseInt(localStorage.getItem(BEST_KEY), 10) || 0; } catch (e) {}
+  statBest.textContent = best;
+
+  var game = {
+    running: false,
+    over: false,
+    score: 0,
+    speed: 260,
+    cartY: GROUND_Y - CART_H_NORMAL,
+    vy: 0,
+    jumping: false,
+    ducking: false,
+    obstacles: [],
+    coins: [],
+    lastObstacleAt: 0,
+    nextObstacleGap: 900,
+    lastCoinAt: 0,
+    lastTime: 0,
+    wallScroll: 0
+  };
+
+  function cartHeight() { return game.ducking && !game.jumping ? CART_H_DUCK : CART_H_NORMAL; }
+  function cartTop() { return GROUND_Y - cartHeight(); }
+
+  function reset() {
+    game.running = false;
+    game.over = false;
+    game.score = 0;
+    game.speed = 260;
+    game.vy = 0;
+    game.jumping = false;
+    game.ducking = false;
+    game.obstacles = [];
+    game.coins = [];
+    game.lastObstacleAt = 0;
+    game.lastCoinAt = 0;
+    game.wallScroll = 0;
+    statScore.textContent = 0;
+    gameOverlay.hidden = true;
+    startOverlay.hidden = false;
+    render(0);
+  }
+
+  function startGame() {
+    startOverlay.hidden = true;
+    gameOverlay.hidden = true;
+    game.running = true;
+    game.lastTime = performance.now();
+    requestAnimationFrame(loop);
+  }
+
+  function doJump() {
+    if (!game.running || game.over) return;
+    if (!game.jumping) {
+      game.jumping = true;
+      game.vy = -JUMP_V;
+    }
+  }
+  function setDuck(v) {
+    if (!game.running || game.over) return;
+    game.ducking = v;
+  }
+
+  function spawnObstacle(now) {
+    var kind = Math.random();
+    var type;
+    if (kind < 0.45) type = 'rock';
+    else if (kind < 0.75) type = 'tnt';
+    else type = 'stalactite';
+
+    var ob = { type: type, x: W + 20 };
+    if (type === 'rock') { ob.w = 28; ob.h = 24; ob.y = GROUND_Y - ob.h; }
+    else if (type === 'tnt') { ob.w = 26; ob.h = 30; ob.y = GROUND_Y - ob.h; }
+    else { ob.w = 30; ob.h = 34; ob.y = 0; }
+    game.obstacles.push(ob);
+    game.lastObstacleAt = now;
+    game.nextObstacleGap = 900 + Math.random() * 700;
+  }
+
+  function spawnCoin(now) {
+    var type = Math.random() < 0.5 ? 'gold' : 'diamond';
+    var y = GROUND_Y - 60 - Math.random() * 60;
+    game.coins.push({ type: type, x: W + 20, y: y, r: 9, taken: false });
+    game.lastCoinAt = now;
+  }
+
+  function aabbOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
+    return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+  }
+
+  function update(dt, now) {
+    if (!game.running || game.over) return;
+
+    game.speed = Math.min(520, game.speed + dt * 6);
+    game.score += dt * 10;
+    statScore.textContent = Math.floor(game.score);
+
+    if (game.jumping) {
+      game.vy += GRAVITY * dt;
+      game.cartY += game.vy * dt;
+      if (game.cartY >= GROUND_Y - cartHeight()) {
+        game.cartY = GROUND_Y - cartHeight();
+        game.jumping = false;
+        game.vy = 0;
+      }
+    } else {
+      game.cartY = cartTop();
+    }
+
+    game.wallScroll += game.speed * dt;
+
+    if (now - game.lastObstacleAt > game.nextObstacleGap) spawnObstacle(now);
+    if (now - game.lastCoinAt > 1400 + Math.random() * 900) spawnCoin(now);
+
+    game.obstacles.forEach(function(ob) { ob.x -= game.speed * dt; });
+    game.obstacles = game.obstacles.filter(function(ob) { return ob.x + ob.w > -20; });
+
+    game.coins.forEach(function(c) { c.x -= game.speed * dt; });
+    game.coins = game.coins.filter(function(c) { return c.x > -20 && !c.taken; });
+
+    var cartTopY = game.cartY, cartH = cartHeight();
+    game.obstacles.forEach(function(ob) {
+      if (aabbOverlap(CART_X, cartTopY, CART_W, cartH, ob.x, ob.y, ob.w, ob.h)) {
+        endGame();
+      }
+    });
+    game.coins.forEach(function(c) {
+      if (!c.taken) {
+        var dx = (CART_X + CART_W/2) - c.x, dy = (cartTopY + cartH/2) - c.y;
+        if (Math.sqrt(dx*dx + dy*dy) < c.r + 16) {
+          c.taken = true;
+          game.score += 25;
+        }
+      }
+    });
+  }
+
+  function endGame() {
+    game.over = true;
+    game.running = false;
+    var finalS = Math.floor(game.score);
+    if (finalS > best) {
+      best = finalS;
+      try { localStorage.setItem(BEST_KEY, String(best)); } catch (e) {}
+    }
+    finalScore.textContent = finalS;
+    finalBest.textContent = best;
+    statBest.textContent = best;
+    gameOverlay.hidden = false;
+  }
+
+  function drawBlock(x, y, w, h, base, accent) {
+    ctx.fillStyle = base;
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = accent;
+    ctx.fillRect(x + w*0.15, y + h*0.15, w*0.3, h*0.3);
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#1a1420';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = '#241a2c';
+    for (var i = -1; i < 6; i++) {
+      var bx = (i * 140) - (game.wallScroll * 0.3) % 140;
+      ctx.beginPath();
+      ctx.moveTo(bx, 0); ctx.lineTo(bx + 30, 0); ctx.lineTo(bx + 15, 46); ctx.closePath();
+      ctx.fill();
+    }
+
+    ctx.strokeStyle = '#5c4a37';
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(0, GROUND_Y + 6); ctx.lineTo(W, GROUND_Y + 6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, GROUND_Y + 16); ctx.lineTo(W, GROUND_Y + 16); ctx.stroke();
+    ctx.fillStyle = '#3a3126';
+    for (var t = 0; t < W + 40; t += 34) {
+      var tx = (t - (game.wallScroll % 34));
+      ctx.fillRect(tx, GROUND_Y + 4, 6, 20);
+    }
+    ctx.fillStyle = '#120e18';
+    ctx.fillRect(0, GROUND_Y + 22, W, H - (GROUND_Y + 22));
+
+    game.obstacles.forEach(function(ob) {
+      if (ob.type === 'rock') drawBlock(ob.x, ob.y, ob.w, ob.h, '#7a7268', '#5a544a');
+      else if (ob.type === 'tnt') {
+        ctx.fillStyle = '#c53a2a';
+        ctx.fillRect(ob.x, ob.y, ob.w, ob.h);
+        ctx.fillStyle = '#f4f4e4';
+        ctx.fillRect(ob.x, ob.y + ob.h*0.4, ob.w, ob.h*0.2);
+      } else {
+        ctx.fillStyle = '#5a5248';
+        ctx.beginPath();
+        ctx.moveTo(ob.x, ob.y);
+        ctx.lineTo(ob.x + ob.w, ob.y);
+        ctx.lineTo(ob.x + ob.w/2, ob.y + ob.h);
+        ctx.closePath();
+        ctx.fill();
+      }
+    });
+
+    game.coins.forEach(function(c) {
+      if (c.taken) return;
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, c.r, 0, Math.PI*2);
+      ctx.fillStyle = c.type === 'gold' ? '#f4c430' : '#4ad9d9';
+      ctx.fill();
+      ctx.strokeStyle = c.type === 'gold' ? '#c99a1e' : '#2a9d9d';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+
+    var cy = game.cartY, ch = cartHeight();
+    ctx.fillStyle = '#6b5a4a';
+    ctx.fillRect(CART_X, cy, CART_W, ch);
+    ctx.strokeStyle = '#2b2318';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(CART_X + 1, cy + 1, CART_W - 2, ch - 2);
+    ctx.fillStyle = '#2b2620';
+    ctx.beginPath(); ctx.arc(CART_X + 7, cy + ch, 5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(CART_X + CART_W - 7, cy + ch, 5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#f4c430';
+    ctx.fillRect(CART_X + CART_W*0.2, cy + ch*0.25, CART_W*0.25, ch*0.3);
+    ctx.fillStyle = '#4ad9d9';
+    ctx.fillRect(CART_X + CART_W*0.55, cy + ch*0.25, CART_W*0.25, ch*0.3);
+  }
+
+  function loop(now) {
+    var dt = Math.min(0.05, (now - game.lastTime) / 1000);
+    game.lastTime = now;
+    update(dt, now);
+    render();
+    if (game.running) requestAnimationFrame(loop);
+  }
+
+  document.getElementById('startBtn').addEventListener('click', startGame);
+  document.getElementById('restartBtn').addEventListener('click', function() { reset(); startGame(); });
+  document.getElementById('resetBtn').addEventListener('click', function() { reset(); });
+
+  boardFrame.addEventListener('pointerdown', function(e) {
+    if (!game.running) return;
+    if (e.target.closest('.game-overlay')) return;
+    doJump();
+  });
+
+  document.getElementById('btnJump').addEventListener('click', doJump);
+  var duckBtn = document.getElementById('btnDuck');
+  duckBtn.addEventListener('pointerdown', function() { setDuck(true); });
+  duckBtn.addEventListener('pointerup', function() { setDuck(false); });
+  duckBtn.addEventListener('pointerleave', function() { setDuck(false); });
+
+  window.addEventListener('keydown', function(e) {
+    if ([' ', 'ArrowUp', 'ArrowDown'].indexOf(e.key) !== -1) e.preventDefault();
+    if (!game.running && (e.key === ' ' || e.key === 'ArrowUp') && !game.over) { startGame(); return; }
+    if (e.key === ' ' || e.key === 'ArrowUp') doJump();
+    else if (e.key === 'ArrowDown') setDuck(true);
+  });
+  window.addEventListener('keyup', function(e) {
+    if (e.key === 'ArrowDown') setDuck(false);
+  });
+
+  reset();
+})();
+</script>
+
+</body>
+</html>

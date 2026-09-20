@@ -130,7 +130,7 @@
     align-items:center;
     justify-content:center;
     background:#eceadd;
-    font-size:clamp(10px, 2.6vw, 16px);
+    font-size:clamp(18px, 4.6vw, 26px);
     font-weight:700;
     color:#3a3a2a;
     cursor:pointer;
@@ -256,7 +256,7 @@
       </div>
       <div class="stat">
         <span class="stat-label">ACHADAS</span>
-        <span class="stat-value" id="statFound">0/12</span>
+        <span class="stat-value" id="statFound">0/6</span>
       </div>
     </div>
 
@@ -279,7 +279,7 @@
     <p class="win-title">VOCÊ ACHOU<br>TODAS!</p>
     <div class="win-stats">
       <div><span>TEMPO</span><strong id="winTime">00:00</strong></div>
-      <div><span>PALAVRAS</span><strong id="winCount">12</strong></div>
+      <div><span>PALAVRAS</span><strong id="winCount">6</strong></div>
     </div>
     <button class="btn" id="winRestart" type="button">Jogar De Novo</button>
   </div>
@@ -289,8 +289,8 @@
 (function(){
   "use strict";
 
-  var SIZE = 13;
-  var ROUND_WORD_COUNT = 12;
+  var SIZE = 10;
+  var ROUND_WORD_COUNT = 6;
   var WORD_POOL = ['DIAMANTE','ESMERALDA','ZUMBI','CREEPER','ESQUELETO','ENDERMAN','PICARETA','MADEIRA','REDSTONE','OBSIDIANA','FORNALHA','ALDEAO','ESPADA','TOCHA','PORTAL','CAVERNA','FAZENDA','LAVA','FERRO','OURO','CARVAO','ARCO','FLECHA','ESCUDO','ARMADURA','MINERIO','TRILHO','VAGONETE'];
   var ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   var DIRS8 = [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];

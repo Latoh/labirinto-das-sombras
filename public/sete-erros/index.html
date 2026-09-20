@@ -152,6 +152,19 @@
   .win-stats span{ font-family:'Press Start 2P', monospace; font-size:7px; color:#4a4a3a; }
   .win-stats strong{ font-size:22px; color:#1c1c14; }
 
+  .menu-link{
+    align-self:flex-start;
+    font-family:'Press Start 2P', monospace;
+    font-size:9px;
+    color:#4a4a3a;
+    text-decoration:none;
+    background:var(--slot-light);
+    border:2px solid #3a3a3a;
+    box-shadow:inset 1px 1px 0 #fff, inset -1px -1px 0 var(--slot-dark);
+    padding:6px 10px;
+  }
+  .menu-link:hover{ color:var(--grass-dark); }
+
   [hidden]{ display:none !important; }
 </style>
 </head>
@@ -160,6 +173,7 @@
 
 <div class="wrap">
   <div class="panel">
+    <a class="menu-link" href="../">← MENU</a>
     <header>
       <h1>7 Erros<br>do Minecraft</h1>
       <p class="subtitle">Toque nos pontos onde as duas cenas são diferentes.</p>

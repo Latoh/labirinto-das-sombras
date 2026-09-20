@@ -163,6 +163,19 @@
   .win-title{ font-family:'Press Start 2P', monospace; font-size:13px; color:var(--grass-dark); margin:0; line-height:1.7; }
   .win-stars{ font-size:30px; letter-spacing:2px; color:var(--gold); }
 
+  .menu-link{
+    align-self:flex-start;
+    font-family:'Press Start 2P', monospace;
+    font-size:9px;
+    color:#4a4a3a;
+    text-decoration:none;
+    background:var(--slot-light);
+    border:2px solid #3a3a3a;
+    box-shadow:inset 1px 1px 0 #fff, inset -1px -1px 0 var(--slot-dark);
+    padding:6px 10px;
+  }
+  .menu-link:hover{ color:var(--grass-dark); }
+
   [hidden]{ display:none !important; }
 </style>
 </head>
@@ -171,6 +184,7 @@
 
 <div class="wrap">
   <div class="panel">
+    <a class="menu-link" href="../">← MENU</a>
     <header>
       <h1>Sequência<br>dos Blocos</h1>
       <p class="subtitle">Olhe o padrão e escolha o bloco que continua a fileira!</p>

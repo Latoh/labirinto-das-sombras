@@ -264,6 +264,20 @@
   }
   .btn-ghost:hover{ border-color:var(--gold-dim); color:var(--gold); }
 
+  .menu-link{
+    align-self:flex-start;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    text-decoration:none;
+    color:var(--parchment-dim-solid);
+    border:1px solid var(--stone-dim);
+    border-radius:5px;
+    padding:4px 10px;
+  }
+  .menu-link:hover{ color:var(--gold); border-color:var(--gold-dim); }
+
   .dpad{
     width:168px;
     height:168px;
@@ -347,6 +361,7 @@
 
 <div class="stage">
   <div class="card">
+    <a class="menu-link" href="../">← Menu</a>
     <header>
       <h1>Labirinto das Sombras</h1>
       <p class="subtitle">Guie a chama até a saída. A tocha só revela o que está perto.</p>

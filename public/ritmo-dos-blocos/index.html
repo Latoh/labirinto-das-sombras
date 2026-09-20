@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Ritmo dos Blocos</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
 <style>
@@ -372,7 +372,7 @@
       <div class="board-frame" id="boardFrame">
         <canvas id="game" width="340" height="500"></canvas>
       </div>
-      <p class="hint">Toque no lado <span class="key">◀</span> esquerdo ou <span class="key">▶</span> direito da tela — ou use <span class="key">←</span> <span class="key">→</span></p>
+      <p class="hint">Arraste o dedo (ou o mouse) na tela — a bolinha acompanha — ou use <span class="key">←</span> <span class="key">→</span></p>
     </div>
 
     <div class="screen" id="screenResult" hidden>
@@ -395,7 +395,7 @@
   "use strict";
 
   var API_BASE = 'https://labirinto-das-sombras.mosquito38.workers.dev';
-  var FIRST_TILE_DELAY = 10;
+  var FIRST_TILE_DELAY = 5;
   var X_SLOTS = 3;
   var MIN_GAP_SEC = 0.16;
   var BEST_KEY = 'ritmo-dos-blocos-best-v1';
@@ -1001,10 +1001,32 @@
     ball.targetSlot = Math.max(0, Math.min(X_SLOTS - 1, ball.targetSlot + dir));
   }
 
-  boardFrame.addEventListener('pointerdown', function(e) {
+  function slotFromClientX(clientX) {
     var r = boardFrame.getBoundingClientRect();
-    var xr = (e.clientX - r.left) / r.width;
-    steer(xr < 0.5 ? -1 : 1);
+    var ratio = (clientX - r.left) / r.width;
+    ratio = Math.max(0, Math.min(1, ratio));
+    return Math.round(ratio * (X_SLOTS - 1));
+  }
+
+  var dragging = false;
+
+  boardFrame.addEventListener('pointerdown', function(e) {
+    if (!game.playing) return;
+    dragging = true;
+    try { boardFrame.setPointerCapture(e.pointerId); } catch (err) {}
+    ball.targetSlot = slotFromClientX(e.clientX);
+    e.preventDefault();
+  });
+  boardFrame.addEventListener('pointermove', function(e) {
+    if (!dragging) return;
+    ball.targetSlot = slotFromClientX(e.clientX);
+    e.preventDefault();
+  });
+  function endDrag() { dragging = false; }
+  boardFrame.addEventListener('pointerup', endDrag);
+  boardFrame.addEventListener('pointercancel', endDrag);
+  boardFrame.addEventListener('pointerleave', function(e) {
+    if (dragging) ball.targetSlot = slotFromClientX(e.clientX);
   });
 
   window.addEventListener('keydown', function(e) {

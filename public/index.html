@@ -3,38 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Labirinto das Sombras</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<title>Sala de Jogos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
   :root{
-    --bg:#0d0a08;
-    --surface:#1a140f;
-    --surface-2:#221a13;
-    --stone:#5c4a37;
-    --stone-dim:#3a2f24;
-    --floor:#1c150f;
+    --bg:#0b0d12;
+    --bg-2:#12151d;
+    --panel:#161a24;
+    --border:#262c3a;
+    --text:#e7e9f0;
+    --text-dim:#8b93a7;
     --ember:#e2712f;
-    --ember-dim:#a84f1f;
     --gold:#cda85f;
-    --gold-dim:#8a713d;
-    --parchment:#e9dcc3;
-    --parchment-dim:#a4907268;
-    --parchment-dim-solid:#9c886a;
-    --start-wash:#4f8f6f;
-    --end-wash:#cda85f;
-    --danger:#c0472c;
-    --shadow:rgba(0,0,0,0.6);
+    --grass:#6aa84f;
+    --diamond:#4ad9d9;
   }
 
-  *{box-sizing:border-box;}
+  *{ box-sizing:border-box; }
 
   body{
     margin:0;
     background:
-      radial-gradient(ellipse 900px 600px at 50% 0%, #241a12 0%, var(--bg) 62%),
+      radial-gradient(ellipse 900px 500px at 50% 0%, var(--bg-2) 0%, var(--bg) 60%),
       var(--bg);
-    color:var(--parchment);
-    font-family:'Spectral', Georgia, 'Times New Roman', serif;
+    color:var(--text);
+    font-family:'IBM Plex Mono', monospace;
     min-height:100vh;
     display:flex;
     align-items:center;
@@ -43,798 +36,142 @@
     padding-block:32px;
   }
 
-  .stage{
-    width:100%;
-    max-width:560px;
-    display:flex;
-    justify-content:center;
-  }
+  .wrap{ width:100%; max-width:720px; display:flex; flex-direction:column; gap:28px; align-items:center; }
 
-  .card{
-    width:100%;
-    max-width:540px;
-    background:
-      linear-gradient(180deg, var(--surface-2), var(--surface));
-    border:1px solid var(--stone-dim);
-    border-radius:10px;
-    padding:26px 24px 22px;
-    box-shadow:
-      0 30px 60px -20px var(--shadow),
-      inset 0 0 0 1px rgba(205,168,95,0.08),
-      inset 0 1px 0 rgba(255,255,255,0.03);
-    display:flex;
-    flex-direction:column;
-    gap:18px;
-  }
-
-  header{
-    text-align:center;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-  }
-
+  header{ text-align:center; display:flex; flex-direction:column; gap:10px; }
   h1{
-    font-family:'Cinzel', 'Times New Roman', serif;
-    font-weight:700;
-    font-size:clamp(22px, 5vw, 30px);
-    letter-spacing:0.04em;
+    font-family:'Press Start 2P', monospace;
+    font-size:clamp(18px, 5vw, 26px);
+    line-height:1.6;
     margin:0;
     color:var(--gold);
-    text-shadow:0 0 18px rgba(226,113,47,0.35), 0 1px 0 rgba(0,0,0,0.5);
+    text-shadow:0 0 18px rgba(205,168,95,0.35);
     text-wrap:balance;
   }
-
-  @media (prefers-reduced-motion: no-preference){
-    h1{ animation:flicker 5.5s ease-in-out infinite; }
-  }
-  @keyframes flicker{
-    0%,100%{ text-shadow:0 0 18px rgba(226,113,47,0.35), 0 1px 0 rgba(0,0,0,0.5); }
-    45%{ text-shadow:0 0 26px rgba(226,113,47,0.55), 0 1px 0 rgba(0,0,0,0.5); }
-    52%{ text-shadow:0 0 12px rgba(226,113,47,0.25), 0 1px 0 rgba(0,0,0,0.5); }
-  }
-
   .subtitle{
     margin:0;
     font-size:14px;
-    font-style:italic;
-    color:var(--parchment-dim-solid);
+    color:var(--text-dim);
+    letter-spacing:0.02em;
   }
 
-  .stats{
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-    background:rgba(0,0,0,0.25);
-    border:1px solid var(--stone-dim);
-    border-radius:8px;
-    padding:10px 14px;
-  }
-  .stat{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:2px;
-    flex:1;
-  }
-  .stat + .stat{ border-left:1px solid var(--stone-dim); }
-  .stat-label{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10px;
-    letter-spacing:0.12em;
-    text-transform:uppercase;
-    color:var(--parchment-dim-solid);
-  }
-  .stat-value{
-    font-family:'IBM Plex Mono', monospace;
-    font-variant-numeric:tabular-nums;
-    font-size:17px;
-    font-weight:600;
-    color:var(--parchment);
-  }
-
-  .board-frame{
-    position:relative;
+  .games{
     width:100%;
-    max-width:500px;
-    margin:0 auto;
-    aspect-ratio:1/1;
-    border-radius:6px;
-    overflow:hidden;
-    border:1px solid var(--stone-dim);
-    box-shadow:0 12px 30px -12px var(--shadow), inset 0 0 24px rgba(0,0,0,0.55);
-  }
-
-  canvas#maze{
-    display:block;
-    width:100%;
-    height:100%;
-    background:var(--floor);
-    touch-action:none;
-  }
-
-  .win-overlay{
-    position:absolute;
-    inset:0;
-    background:rgba(10,7,5,0.86);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-  }
-  .win-card{
-    background:var(--surface);
-    border:1px solid var(--gold-dim);
-    border-radius:8px;
-    padding:22px 26px;
-    text-align:center;
-    max-width:280px;
-    box-shadow:0 20px 40px -10px var(--shadow);
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-  }
-  .win-title{
-    margin:0;
-    font-family:'Cinzel', serif;
-    font-weight:600;
-    font-size:18px;
-    color:var(--gold);
-  }
-  .win-stats{
-    display:flex;
-    justify-content:center;
-    gap:22px;
-  }
-  .win-stats div{
-    display:flex;
-    flex-direction:column;
-    gap:2px;
-  }
-  .win-stats span{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10px;
-    letter-spacing:0.1em;
-    text-transform:uppercase;
-    color:var(--parchment-dim-solid);
-  }
-  .win-stats strong{
-    font-family:'IBM Plex Mono', monospace;
-    font-variant-numeric:tabular-nums;
-    font-size:18px;
-    color:var(--parchment);
-  }
-
-  .btn{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    color:#1a140f;
-    background:linear-gradient(180deg, var(--gold), var(--gold-dim));
-    border:none;
-    border-radius:5px;
-    padding:10px 16px;
-    cursor:pointer;
-    font-weight:600;
-  }
-  .btn:hover{ filter:brightness(1.08); }
-  .btn:focus-visible, .btn-ghost:focus-visible, input[type=checkbox]:focus-visible{
-    outline:2px solid var(--ember);
-    outline-offset:2px;
-  }
-  .btn-ghost{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    color:var(--parchment);
-    background:transparent;
-    border:1px solid var(--stone);
-    border-radius:5px;
-    padding:8px 12px;
-    cursor:pointer;
-  }
-  .btn-ghost:hover{ border-color:var(--gold-dim); color:var(--gold); }
-
-  .dpad{
-    width:168px;
-    height:168px;
-    margin:0 auto;
     display:grid;
-    grid-template-columns:repeat(3,1fr);
-    grid-template-rows:repeat(3,1fr);
-    gap:6px;
+    grid-template-columns:1fr;
+    gap:18px;
   }
-  .dpad-btn{
-    background:linear-gradient(180deg, var(--surface-2), var(--surface));
-    border:1px solid var(--stone);
-    color:var(--gold);
-    font-size:20px;
-    border-radius:8px;
+  @media (min-width:560px){
+    .games{ grid-template-columns:1fr 1fr; }
+  }
+
+  .card{
+    display:flex;
+    flex-direction:column;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+    text-decoration:none;
+    color:var(--text);
+    box-shadow:0 16px 34px -18px rgba(0,0,0,0.7);
+    transition:transform 0.15s ease, border-color 0.15s ease;
+  }
+  .card:hover{ transform:translateY(-3px); border-color:var(--card-accent, var(--gold)); }
+  .card:focus-visible{ outline:2px solid var(--card-accent, var(--gold)); outline-offset:3px; }
+
+  .card-screen{
+    aspect-ratio:16/10;
     display:flex;
     align-items:center;
     justify-content:center;
-    -webkit-user-select:none;
-    user-select:none;
-    cursor:pointer;
-    box-shadow:0 3px 0 var(--stone-dim);
+    position:relative;
   }
-  .dpad-btn:active{
-    background:rgba(226,113,47,0.35);
-    transform:translateY(2px);
-    box-shadow:none;
-  }
-  .dpad-n{ grid-column:2; grid-row:1; }
-  .dpad-w{ grid-column:1; grid-row:2; }
-  .dpad-s{ grid-column:2; grid-row:3; }
-  .dpad-e{ grid-column:3; grid-row:2; }
+  .card-screen svg{ width:56px; height:56px; position:relative; z-index:1; }
 
-  @media (max-width:480px){
-    .dpad{ width:204px; height:204px; }
-    .dpad-btn{ font-size:24px; }
+  .card-labirinto .card-screen{
+    background:radial-gradient(ellipse at 50% 40%, #241a12 0%, #0d0a08 70%);
+  }
+  .card-caca .card-screen{
+    background:linear-gradient(180deg, #8fd1ea 0%, #bfe8f5 55%, #6aa84f 55%, #4a7a35 100%);
   }
 
-  .footer-row{
+  .card-body{
+    padding:16px 18px 20px;
     display:flex;
-    flex-wrap:wrap;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
+    flex-direction:column;
+    gap:8px;
   }
-  .hint{
-    margin:0;
+  .card-title{
+    font-family:'Press Start 2P', monospace;
     font-size:12px;
-    color:var(--parchment-dim-solid);
+    line-height:1.6;
+    margin:0;
+    color:var(--card-accent, var(--gold));
   }
-  .key{
-    font-family:'IBM Plex Mono', monospace;
-    background:rgba(0,0,0,0.35);
-    border:1px solid var(--stone-dim);
-    border-radius:4px;
-    padding:1px 6px;
-    color:var(--parchment);
+  .card-desc{
+    margin:0;
+    font-size:13px;
+    color:var(--text-dim);
+    line-height:1.5;
   }
-  .footer-actions{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    flex-wrap:wrap;
-  }
-  .map-toggle{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    font-family:'IBM Plex Mono', monospace;
+  .card-cta{
+    margin-top:6px;
     font-size:11px;
-    color:var(--parchment-dim-solid);
-    cursor:pointer;
+    letter-spacing:0.08em;
+    color:var(--card-accent, var(--gold));
+    font-weight:600;
   }
-  .map-toggle input{ accent-color:var(--ember); cursor:pointer; }
 
-  [hidden]{ display:none !important; }
+  .card-labirinto{ --card-accent:var(--ember); }
+  .card-caca{ --card-accent:var(--grass); }
+
+  footer{ font-size:11px; color:var(--text-dim); text-align:center; }
 </style>
 </head>
 <body>
 
-<div class="stage">
-  <div class="card">
-    <header>
-      <h1>Labirinto das Sombras</h1>
-      <p class="subtitle">Guie a chama até a saída. A tocha só revela o que está perto.</p>
-    </header>
+<div class="wrap">
+  <header>
+    <h1>Sala de<br>Jogos</h1>
+    <p class="subtitle">escolha um jogo pra jogar no navegador</p>
+  </header>
 
-    <div class="stats" role="status" aria-live="polite">
-      <div class="stat">
-        <span class="stat-label">Tempo</span>
-        <span class="stat-value" id="statTime">00:00.0</span>
+  <div class="games">
+    <a class="card card-labirinto" href="./labirinto/">
+      <div class="card-screen">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <path d="M32 8 C 44 20, 50 30, 32 46 C 14 30, 20 20, 32 8 Z" fill="#e2712f"/>
+          <path d="M32 20 C 38 26, 40 30, 32 38 C 24 30, 26 26, 32 20 Z" fill="#f4c98a"/>
+        </svg>
       </div>
-      <div class="stat">
-        <span class="stat-label">Passos</span>
-        <span class="stat-value" id="statMoves">0</span>
+      <div class="card-body">
+        <h2 class="card-title">Labirinto das<br>Sombras</h2>
+        <p class="card-desc">Labirinto 25×25 iluminado só pela sua tocha. Encontre a saída no escuro.</p>
+        <span class="card-cta">JOGAR →</span>
       </div>
-      <div class="stat">
-        <span class="stat-label">Recorde</span>
-        <span class="stat-value" id="statBest">--:--.-</span>
-      </div>
-    </div>
+    </a>
 
-    <div class="board-frame" id="boardFrame">
-      <canvas id="maze" width="500" height="500" aria-label="Tabuleiro do labirinto"></canvas>
-
-      <div class="win-overlay" id="winOverlay" hidden>
-        <div class="win-card">
-          <p class="win-title">Você encontrou a saída</p>
-          <div class="win-stats">
-            <div><span>Tempo</span><strong id="winTime">00:00.0</strong></div>
-            <div><span>Passos</span><strong id="winMoves">0</strong></div>
-          </div>
-          <button class="btn" id="winRestart" type="button">Novo labirinto</button>
-        </div>
+    <a class="card card-caca" href="./caca-palavras/">
+      <div class="card-screen">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="10" width="44" height="44" rx="4" fill="#c6c6c6" stroke="#3a3a3a" stroke-width="3"/>
+          <rect x="18" y="18" width="12" height="12" fill="#4ad9d9"/>
+          <rect x="34" y="18" width="12" height="12" fill="#eceadd"/>
+          <rect x="18" y="34" width="12" height="12" fill="#eceadd"/>
+          <rect x="34" y="34" width="12" height="12" fill="#f4c430"/>
+        </svg>
       </div>
-    </div>
-
-    <div class="dpad" id="dpad">
-      <button class="dpad-btn dpad-n" data-dir="N" type="button" aria-label="Mover para cima">&#9650;</button>
-      <button class="dpad-btn dpad-w" data-dir="W" type="button" aria-label="Mover para esquerda">&#9664;</button>
-      <button class="dpad-btn dpad-s" data-dir="S" type="button" aria-label="Mover para baixo">&#9660;</button>
-      <button class="dpad-btn dpad-e" data-dir="E" type="button" aria-label="Mover para direita">&#9654;</button>
-    </div>
-
-    <div class="footer-row">
-      <p class="hint"><span class="key">W A S D</span> ou <span class="key">setas</span> para mover</p>
-      <div class="footer-actions">
-        <label class="map-toggle"><input type="checkbox" id="mapToggle"> revelar mapa</label>
-        <button class="btn-ghost" id="newMaze" type="button">Novo labirinto</button>
+      <div class="card-body">
+        <h2 class="card-title">Caça-Palavras<br>do Minecraft</h2>
+        <p class="card-desc">Ache 12 palavras do Minecraft escondidas na grade. Muda a cada partida.</p>
+        <span class="card-cta">JOGAR →</span>
       </div>
-    </div>
+    </a>
   </div>
+
+  <footer>feito com Claude Code</footer>
 </div>
 
-<script>
-(function(){
-  "use strict";
-
-  var N = 25;
-  var CELL = 20;
-  var CANVAS = N * CELL;
-  var TORCH_RADIUS = 60;
-  var STEP_INTERVAL = 128;
-  var ANIM_DUR = 108;
-  var BRAID_PERCENT = 0.13;
-  var BEST_KEY = 'labirinto-sombras-best-v1';
-
-  var COLORS = {
-    wall: '#5c4a37',
-    fogBlack: 'rgba(13,10,8,0.985)',
-    fogDim: 'rgba(13,10,8,0.74)',
-    startWash: 'rgba(79,143,111,0.55)',
-    endWash: 'rgba(205,168,95,0.6)'
-  };
-
-  var DIRS = {
-    N: { dx: 0, dy: -1, opp: 'S' },
-    S: { dx: 0, dy: 1, opp: 'N' },
-    E: { dx: 1, dy: 0, opp: 'W' },
-    W: { dx: -1, dy: 0, opp: 'E' }
-  };
-
-  var KEY_DIR = {
-    ArrowUp: 'N', KeyW: 'N',
-    ArrowDown: 'S', KeyS: 'S',
-    ArrowLeft: 'W', KeyA: 'W',
-    ArrowRight: 'E', KeyD: 'E'
-  };
-
-  var canvas = document.getElementById('maze');
-  var ctx = canvas.getContext('2d');
-  var mazeLayer = document.createElement('canvas');
-  mazeLayer.width = CANVAS; mazeLayer.height = CANVAS;
-  var fogCanvas = document.createElement('canvas');
-  fogCanvas.width = CANVAS; fogCanvas.height = CANVAS;
-  var fogCtx = fogCanvas.getContext('2d');
-  var scratch = document.createElement('canvas');
-  scratch.width = CANVAS; scratch.height = CANVAS;
-  var sctx = scratch.getContext('2d');
-
-  var statTime = document.getElementById('statTime');
-  var statMoves = document.getElementById('statMoves');
-  var statBest = document.getElementById('statBest');
-  var winOverlay = document.getElementById('winOverlay');
-  var winTime = document.getElementById('winTime');
-  var winMoves = document.getElementById('winMoves');
-  var mapToggle = document.getElementById('mapToggle');
-
-  var mapRevealed = false;
-  var bestMs = null;
-
-  try {
-    var rawBest = localStorage.getItem(BEST_KEY);
-    if (rawBest) { bestMs = parseFloat(rawBest); statBest.textContent = fmtTime(bestMs); }
-  } catch (e) {}
-
-  var game = {
-    seed: 0,
-    cells: null,
-    player: { cx: 0, cy: 0, px: CELL/2, py: CELL/2 },
-    moving: false,
-    keysDown: new Set(),
-    lastStep: -Infinity,
-    discovered: new Set(),
-    moves: 0,
-    startTime: null,
-    elapsed: 0,
-    finished: false
-  };
-
-  function mulberry32(a) {
-    return function() {
-      a |= 0; a = (a + 0x6D2B79F5) | 0;
-      var t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-
-  function generateMaze(n, rng) {
-    var cells = [];
-    for (var y = 0; y < n; y++) {
-      var row = [];
-      for (var x = 0; x < n; x++) {
-        row.push({ x: x, y: y, walls: { N: true, E: true, S: true, W: true }, visited: false });
-      }
-      cells.push(row);
-    }
-    var stack = [];
-    var current = cells[0][0];
-    current.visited = true;
-    var visitedCount = 1;
-    var total = n * n;
-    while (visitedCount < total) {
-      var options = [];
-      for (var key in DIRS) {
-        var d = DIRS[key];
-        var nx = current.x + d.dx, ny = current.y + d.dy;
-        if (nx >= 0 && ny >= 0 && nx < n && ny < n && !cells[ny][nx].visited) {
-          options.push({ dir: key, cell: cells[ny][nx] });
-        }
-      }
-      if (options.length > 0) {
-        var pick = options[Math.floor(rng() * options.length)];
-        current.walls[pick.dir] = false;
-        pick.cell.walls[DIRS[pick.dir].opp] = false;
-        pick.cell.visited = true;
-        visitedCount++;
-        stack.push(current);
-        current = pick.cell;
-      } else {
-        current = stack.pop();
-      }
-    }
-    return cells;
-  }
-
-  function braid(cells, rng, percent) {
-    for (var y = 0; y < N; y++) {
-      for (var x = 0; x < N; x++) {
-        var cell = cells[y][x];
-        var wallDirs = [];
-        for (var key in DIRS) { if (cell.walls[key]) wallDirs.push(key); }
-        if (wallDirs.length === 3 && rng() < percent) {
-          var candidates = wallDirs.filter(function(dir) {
-            var d = DIRS[dir];
-            var nx = cell.x + d.dx, ny = cell.y + d.dy;
-            return nx >= 0 && ny >= 0 && nx < N && ny < N;
-          });
-          if (candidates.length) {
-            var dir = candidates[Math.floor(rng() * candidates.length)];
-            var d = DIRS[dir];
-            var neighbor = cells[cell.y + d.dy][cell.x + d.dx];
-            cell.walls[dir] = false;
-            neighbor.walls[d.opp] = false;
-          }
-        }
-      }
-    }
-  }
-
-  function drawTileWash(c, cx, cy, color) {
-    var px = cx * CELL + CELL/2, py = cy * CELL + CELL/2;
-    var g = c.createRadialGradient(px, py, 0, px, py, CELL * 1.4);
-    g.addColorStop(0, color);
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    c.fillStyle = g;
-    c.fillRect(cx*CELL - CELL, cy*CELL - CELL, CELL*3, CELL*3);
-  }
-
-  function drawMazeStatic(cells) {
-    var c = mazeLayer.getContext('2d');
-    c.clearRect(0, 0, CANVAS, CANVAS);
-    c.fillStyle = '#1c150f';
-    c.fillRect(0, 0, CANVAS, CANVAS);
-    drawTileWash(c, 0, 0, COLORS.startWash);
-    drawTileWash(c, N-1, N-1, COLORS.endWash);
-    c.strokeStyle = COLORS.wall;
-    c.lineWidth = 3;
-    c.lineCap = 'square';
-    c.beginPath();
-    for (var y = 0; y < N; y++) {
-      for (var x = 0; x < N; x++) {
-        var cell = cells[y][x];
-        var px = x * CELL, py = y * CELL;
-        if (cell.walls.N) { c.moveTo(px, py); c.lineTo(px + CELL, py); }
-        if (cell.walls.W) { c.moveTo(px, py); c.lineTo(px, py + CELL); }
-        if (x === N-1 && cell.walls.E) { c.moveTo(px + CELL, py); c.lineTo(px + CELL, py + CELL); }
-        if (y === N-1 && cell.walls.S) { c.moveTo(px, py + CELL); c.lineTo(px + CELL, py + CELL); }
-      }
-    }
-    c.stroke();
-    c.strokeStyle = COLORS.wall;
-    c.lineWidth = 4;
-    c.strokeRect(2, 2, CANVAS - 4, CANVAS - 4);
-  }
-
-  function resetFog() {
-    fogCtx.clearRect(0, 0, CANVAS, CANVAS);
-    fogCtx.fillStyle = COLORS.fogBlack;
-    fogCtx.fillRect(0, 0, CANVAS, CANVAS);
-  }
-
-  function paintDiscoveredCell(gx, gy) {
-    fogCtx.clearRect(gx * CELL, gy * CELL, CELL, CELL);
-    fogCtx.fillStyle = COLORS.fogDim;
-    fogCtx.fillRect(gx * CELL, gy * CELL, CELL, CELL);
-  }
-
-  function markDiscovered(px, py) {
-    var cx = Math.floor(px / CELL), cy = Math.floor(py / CELL);
-    var rCells = Math.ceil(TORCH_RADIUS / CELL) + 1;
-    for (var gy = cy - rCells; gy <= cy + rCells; gy++) {
-      for (var gx = cx - rCells; gx <= cx + rCells; gx++) {
-        if (gx < 0 || gy < 0 || gx >= N || gy >= N) continue;
-        var key = gx + ',' + gy;
-        if (game.discovered.has(key)) continue;
-        var ccx = gx * CELL + CELL/2, ccy = gy * CELL + CELL/2;
-        var dist = Math.hypot(ccx - px, ccy - py);
-        if (dist <= TORCH_RADIUS + CELL * 0.5) {
-          game.discovered.add(key);
-          paintDiscoveredCell(gx, gy);
-        }
-      }
-    }
-  }
-
-  function drawPlayer(c) {
-    var px = game.player.px, py = game.player.py;
-    var glow = c.createRadialGradient(px, py, 0, px, py, 14);
-    glow.addColorStop(0, 'rgba(226,113,47,0.75)');
-    glow.addColorStop(1, 'rgba(226,113,47,0)');
-    c.fillStyle = glow;
-    c.beginPath(); c.arc(px, py, 14, 0, Math.PI*2); c.fill();
-
-    c.fillStyle = '#f2b988';
-    c.beginPath(); c.arc(px, py, 6, 0, Math.PI*2); c.fill();
-    c.strokeStyle = '#7a3a17';
-    c.lineWidth = 1.5;
-    c.stroke();
-  }
-
-  function render() {
-    ctx.clearRect(0, 0, CANVAS, CANVAS);
-    ctx.drawImage(mazeLayer, 0, 0);
-    drawPlayer(ctx);
-    if (!mapRevealed) {
-      sctx.clearRect(0, 0, CANVAS, CANVAS);
-      sctx.drawImage(fogCanvas, 0, 0);
-      sctx.globalCompositeOperation = 'destination-out';
-      var g = sctx.createRadialGradient(game.player.px, game.player.py, 0, game.player.px, game.player.py, TORCH_RADIUS);
-      g.addColorStop(0, 'rgba(255,255,255,1)');
-      g.addColorStop(0.7, 'rgba(255,255,255,0.92)');
-      g.addColorStop(1, 'rgba(255,255,255,0)');
-      sctx.fillStyle = g;
-      sctx.beginPath();
-      sctx.arc(game.player.px, game.player.py, TORCH_RADIUS, 0, Math.PI*2);
-      sctx.fill();
-      sctx.globalCompositeOperation = 'source-over';
-      ctx.drawImage(scratch, 0, 0);
-    }
-  }
-
-  function fmtTime(ms) {
-    var totalSec = Math.max(0, ms) / 1000;
-    var m = Math.floor(totalSec / 60);
-    var s = totalSec % 60;
-    var sStr = s.toFixed(1);
-    if (s < 10) sStr = '0' + sStr;
-    return String(m).padStart(2, '0') + ':' + sStr;
-  }
-
-  function updateStats() {
-    statMoves.textContent = game.moves;
-  }
-
-  function saveSnapshot() {
-    try {
-      if (window.claude && window.claude.hot && window.claude.hot.snapshot) {
-        window.claude.hot.snapshot({
-          seed: game.seed,
-          cx: game.player.cx,
-          cy: game.player.cy,
-          moves: game.moves,
-          elapsed: game.elapsed,
-          finished: game.finished,
-          discovered: Array.from(game.discovered),
-          mapRevealed: mapRevealed
-        });
-      }
-    } catch (e) {}
-  }
-
-  function onWin() {
-    game.finished = true;
-    var finalTime = game.elapsed;
-    winTime.textContent = fmtTime(finalTime);
-    winMoves.textContent = game.moves;
-    if (bestMs === null || finalTime < bestMs) {
-      bestMs = finalTime;
-      try { localStorage.setItem(BEST_KEY, String(finalTime)); } catch (e) {}
-      statBest.textContent = fmtTime(bestMs);
-    }
-    winOverlay.hidden = false;
-    saveSnapshot();
-  }
-
-  function animateTo(nx, ny) {
-    game.moving = true;
-    var from = { x: game.player.px, y: game.player.py };
-    var to = { x: nx * CELL + CELL/2, y: ny * CELL + CELL/2 };
-    var start = performance.now();
-    function step(now) {
-      var t = Math.min(1, (now - start) / ANIM_DUR);
-      var e = 1 - (1 - t) * (1 - t);
-      game.player.px = from.x + (to.x - from.x) * e;
-      game.player.py = from.y + (to.y - from.y) * e;
-      if (t < 1) {
-        requestAnimationFrame(step);
-      } else {
-        game.player.px = to.x; game.player.py = to.y;
-        game.moving = false;
-      }
-    }
-    requestAnimationFrame(step);
-  }
-
-  function tryMove(dir) {
-    if (game.finished || game.moving) return;
-    var cell = game.cells[game.player.cy][game.player.cx];
-    if (cell.walls[dir]) return;
-    var d = DIRS[dir];
-    var nx = game.player.cx + d.dx, ny = game.player.cy + d.dy;
-    if (nx < 0 || ny < 0 || nx >= N || ny >= N) return;
-    if (!game.startTime) game.startTime = performance.now() - game.elapsed;
-    game.player.cx = nx; game.player.cy = ny;
-    game.moves++;
-    animateTo(nx, ny);
-    updateStats();
-    if (nx === N-1 && ny === N-1) {
-      onWin();
-    } else {
-      saveSnapshot();
-    }
-  }
-
-  function handleHeldKeys(now) {
-    if (game.moving || game.finished) return;
-    if (now - game.lastStep < STEP_INTERVAL) return;
-    var dir = null;
-    game.keysDown.forEach(function(d) { if (!dir) dir = d; });
-    if (dir) { tryMove(dir); game.lastStep = now; }
-  }
-
-  window.addEventListener('keydown', function(e) {
-    var dir = KEY_DIR[e.code];
-    if (dir) {
-      e.preventDefault();
-      game.keysDown.add(dir);
-    }
-  });
-  window.addEventListener('keyup', function(e) {
-    var dir = KEY_DIR[e.code];
-    if (dir) game.keysDown.delete(dir);
-  });
-  window.addEventListener('blur', function() { game.keysDown.clear(); });
-
-  var dpad = document.getElementById('dpad');
-  dpad.querySelectorAll('.dpad-btn').forEach(function(btn) {
-    var dir = btn.getAttribute('data-dir');
-    var press = function(e) { e.preventDefault(); game.keysDown.add(dir); };
-    var release = function() { game.keysDown.delete(dir); };
-    btn.addEventListener('pointerdown', press);
-    btn.addEventListener('pointerup', release);
-    btn.addEventListener('pointerleave', release);
-    btn.addEventListener('pointercancel', release);
-  });
-
-  mapToggle.addEventListener('change', function(e) {
-    mapRevealed = e.target.checked;
-    saveSnapshot();
-  });
-
-  function newMazeGame() {
-    var seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
-    initGame(seed);
-    saveSnapshot();
-  }
-
-  function initGame(seed) {
-    game.seed = seed;
-    var rng = mulberry32(seed);
-    game.cells = generateMaze(N, rng);
-    braid(game.cells, rng, BRAID_PERCENT);
-    drawMazeStatic(game.cells);
-    resetFog();
-    game.discovered = new Set();
-    game.player.cx = 0; game.player.cy = 0;
-    game.player.px = CELL/2; game.player.py = CELL/2;
-    game.moving = false;
-    game.keysDown.clear();
-    game.moves = 0;
-    game.startTime = null;
-    game.elapsed = 0;
-    game.finished = false;
-    winOverlay.hidden = true;
-    markDiscovered(game.player.px, game.player.py);
-    updateStats();
-    statTime.textContent = fmtTime(0);
-  }
-
-  function restoreFromSnapshot(data) {
-    game.seed = data.seed;
-    var rng = mulberry32(data.seed);
-    game.cells = generateMaze(N, rng);
-    braid(game.cells, rng, BRAID_PERCENT);
-    drawMazeStatic(game.cells);
-    resetFog();
-    game.discovered = new Set();
-    (data.discovered || []).forEach(function(key) {
-      game.discovered.add(key);
-      var parts = key.split(',');
-      paintDiscoveredCell(parseInt(parts[0], 10), parseInt(parts[1], 10));
-    });
-    game.player.cx = data.cx || 0; game.player.cy = data.cy || 0;
-    game.player.px = game.player.cx * CELL + CELL/2;
-    game.player.py = game.player.cy * CELL + CELL/2;
-    game.moves = data.moves || 0;
-    game.finished = !!data.finished;
-    game.elapsed = data.elapsed || 0;
-    game.startTime = game.finished ? null : performance.now() - game.elapsed;
-    mapRevealed = !!data.mapRevealed;
-    mapToggle.checked = mapRevealed;
-    markDiscovered(game.player.px, game.player.py);
-    updateStats();
-    statTime.textContent = fmtTime(game.elapsed);
-    if (game.finished) {
-      winTime.textContent = fmtTime(game.elapsed);
-      winMoves.textContent = game.moves;
-      winOverlay.hidden = false;
-    } else {
-      winOverlay.hidden = true;
-    }
-  }
-
-  document.getElementById('newMaze').addEventListener('click', newMazeGame);
-  document.getElementById('winRestart').addEventListener('click', newMazeGame);
-
-  function frame(now) {
-    if (!game.finished) {
-      markDiscovered(game.player.px, game.player.py);
-      handleHeldKeys(now);
-      if (game.startTime) game.elapsed = now - game.startTime;
-      statTime.textContent = fmtTime(game.elapsed);
-    }
-    render();
-    requestAnimationFrame(frame);
-  }
-
-  function start(data) {
-    if (data && data.seed) {
-      restoreFromSnapshot(data);
-    } else {
-      newMazeGame();
-    }
-    requestAnimationFrame(frame);
-  }
-
-  try {
-    if (window.claude && window.claude.hot && window.claude.hot.ready) {
-      window.claude.hot.ready(start);
-    } else {
-      start((window.claude && window.claude.hot && window.claude.hot.data) || {});
-    }
-  } catch (e) {
-    start({});
-  }
-})();
-</script>
 </body>
 </html>

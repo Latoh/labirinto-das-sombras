@@ -66,6 +66,13 @@
     text-wrap:balance;
   }
   .subtitle{ margin:0; font-size:18px; color:#4a4a3a; }
+  .scene-name{
+    margin:0;
+    font-family:'Press Start 2P', monospace;
+    font-size:10px;
+    color:var(--grass-dark);
+    text-align:center;
+  }
 
   .stats{
     display:flex;
@@ -179,6 +186,8 @@
       <p class="subtitle">Toque nos pontos onde as duas cenas são diferentes.</p>
     </header>
 
+    <p class="scene-name" id="sceneName">CENA</p>
+
     <div class="stats" role="status" aria-live="polite">
       <div class="stat">
         <span class="stat-label">TEMPO</span>
@@ -216,51 +225,7 @@
   var VB_W = 400, VB_H = 260;
   var ROUND_COUNT = 7;
 
-  var DIFFS = [
-    { id: 'sun_color', box: [300, 5, 80, 80] },
-    { id: 'cloud1_visible', box: [15, 15, 90, 60] },
-    { id: 'cloud2_move', box: [150, 5, 130, 60] },
-    { id: 'leaf_extra_visible', box: [70, 120, 55, 60] },
-    { id: 'roof_color', box: [250, 95, 90, 60] },
-    { id: 'door_color', box: [278, 170, 34, 40] },
-    { id: 'window_visible', box: [310, 152, 36, 34] },
-    { id: 'chimney_smoke_visible', box: [312, 95, 44, 50] },
-    { id: 'mob_color', box: [142, 192, 42, 42] },
-    { id: 'mob_eye3_visible', box: [142, 192, 42, 42] },
-    { id: 'animal_color', box: [188, 214, 44, 32] },
-    { id: 'flower_move', box: [95, 210, 55, 32] },
-    { id: 'chest_latch_visible', box: [22, 200, 46, 40] },
-    { id: 'torch_flame_color', box: [372, 160, 28, 44] }
-  ];
-
-  var frameA = document.getElementById('frameA');
-  var frameB = document.getElementById('frameB');
-  var statTime = document.getElementById('statTime');
-  var statFound = document.getElementById('statFound');
-  var winOverlay = document.getElementById('winOverlay');
-  var winTime = document.getElementById('winTime');
-
-  var game = { seed: 0, active: [], found: {}, startTime: null, elapsed: 0, finished: false };
-
-  function mulberry32(a) {
-    return function() {
-      a |= 0; a = (a + 0x6D2B79F5) | 0;
-      var t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-  function shuffle(arr, rng) {
-    var a = arr.slice();
-    for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(rng() * (i + 1));
-      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
-    }
-    return a;
-  }
-
-  function sceneSVG(activeSet) {
-    var on = function(id) { return activeSet.has(id); };
+  function casaSVG(on) {
     var sunFill = on('sun_color') ? '#f2994a' : '#ffd43b';
     var cloud1Op = on('cloud1_visible') ? 0 : 1;
     var cloud2X = on('cloud2_move') ? 40 : 0;
@@ -323,6 +288,211 @@
     );
   }
 
+  function cavernaSVG(on) {
+    var torch1Fill = on('torch1_flame_color') ? '#4ad9d9' : '#f2994a';
+    var torch2Op = on('torch2_visible') ? 0 : 1;
+    var stalOp = on('stalactite_visible') ? 0 : 1;
+    var oreFill = on('ore_color') ? '#f4c430' : '#4ad9d9';
+    var cartX = on('cart_move') ? 26 : 0;
+    var railOp = on('rail_visible') ? 0 : 1;
+    var skelOp = on('skeleton_detail') ? 1 : 0;
+    var lavaFill = on('lava_color') ? '#4d96e8' : '#e8622f';
+    var crackOp = on('crack_visible') ? 1 : 0;
+    var rungOp = on('ladder_rung_visible') ? 0 : 1;
+    var bucketOp = on('bucket_visible') ? 1 : 0;
+    var glowOp = on('glow_visible') ? 1 : 0;
+
+    return (
+      '<svg viewBox="0 0 ' + VB_W + ' ' + VB_H + '" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="' + VB_W + '" height="' + VB_H + '" fill="#332e28"/>' +
+      '<rect x="0" y="210" width="' + VB_W + '" height="50" fill="#4a4038"/>' +
+      '<rect x="40" y="70" width="6" height="26" fill="#6b4420"/>' +
+      '<path d="M43 70 C 39 65, 39 60, 43 55 C 47 60, 47 65, 43 70 Z" fill="' + torch1Fill + '"/>' +
+      '<g opacity="' + torch2Op + '">' +
+        '<rect x="350" y="70" width="6" height="26" fill="#6b4420"/>' +
+        '<path d="M353 70 C 349 65, 349 60, 353 55 C 357 60, 357 65, 353 70 Z" fill="#f2994a"/>' +
+      '</g>' +
+      '<polygon points="150,0 166,0 158,42" fill="#5a5248" opacity="' + stalOp + '"/>' +
+      '<g opacity="' + crackOp + '" stroke="#221e18" stroke-width="2" fill="none">' +
+        '<path d="M198 26 L210 40 L206 55 L216 62"/>' +
+      '</g>' +
+      '<rect x="245" y="85" width="80" height="52" fill="#5a5248" stroke="#221e18" stroke-width="1.5"/>' +
+      '<rect x="248" y="88" width="24" height="22" fill="' + oreFill + '"/>' +
+      '<rect x="276" y="88" width="24" height="22" fill="#6a6258"/>' +
+      '<rect x="248" y="114" width="24" height="20" fill="#6a6258"/>' +
+      '<rect x="276" y="114" width="24" height="20" fill="' + oreFill + '"/>' +
+      '<g opacity="' + glowOp + '" fill="#fff3c4">' +
+        '<circle cx="252" cy="70" r="2.4"/><circle cx="262" cy="64" r="2"/><circle cx="270" cy="72" r="2.2"/>' +
+      '</g>' +
+      '<g transform="translate(' + cartX + ',0)">' +
+        '<rect x="55" y="182" width="34" height="16" rx="2" fill="#6b5a4a" stroke="#3a3126" stroke-width="1.5"/>' +
+        '<circle cx="63" cy="200" r="5" fill="#2b2620"/><circle cx="81" cy="200" r="5" fill="#2b2620"/>' +
+      '</g>' +
+      '<g opacity="' + railOp + '" stroke="#8b8b8b" stroke-width="2.5">' +
+        '<line x1="20" y1="203" x2="140" y2="203"/><line x1="20" y1="209" x2="140" y2="209"/>' +
+      '</g>' +
+      '<rect x="178" y="178" width="26" height="40" fill="#d8d4c8"/>' +
+      '<rect x="183" y="186" width="4" height="4" fill="#8b3a2a" opacity="' + skelOp + '"/>' +
+      '<rect x="195" y="186" width="4" height="4" fill="#8b3a2a" opacity="' + skelOp + '"/>' +
+      '<ellipse cx="300" cy="222" rx="30" ry="12" fill="' + lavaFill + '"/>' +
+      '<g opacity="' + bucketOp + '">' +
+        '<rect x="330" y="205" width="16" height="14" fill="#8b8b8b" stroke="#3a3a3a" stroke-width="1.5"/>' +
+      '</g>' +
+      '<rect x="365" y="145" width="4" height="90" fill="#6b4420"/>' +
+      '<rect x="391" y="145" width="4" height="90" fill="#6b4420"/>' +
+      '<rect x="365" y="160" width="30" height="4" fill="#6b4420"/>' +
+      '<rect x="365" y="180" width="30" height="4" fill="#6b4420" opacity="' + rungOp + '"/>' +
+      '<rect x="365" y="200" width="30" height="4" fill="#6b4420"/>' +
+      '<rect x="365" y="220" width="30" height="4" fill="#6b4420"/>' +
+      '</svg>'
+    );
+  }
+
+  function fazendaSVG(on) {
+    var sunFill = on('sun_color2') ? '#f2994a' : '#ffd43b';
+    var cloudOp = on('cloud_visible') ? 0 : 1;
+    var barnRoofFill = on('barn_roof_color') ? '#3d6fa8' : '#5a4a3a';
+    var barnDoorFill = on('barn_door_color') ? '#2f9e44' : '#5c3a1e';
+    var siloFill = on('silo_color') ? '#e8622f' : '#c6c6c6';
+    var cropFill = on('crop_color') ? '#6aa84f' : '#e8c14a';
+    var hatFill = on('hat_color') ? '#c53a2a' : '#5a3a2a';
+    var cowFill = on('cow_color') ? '#e8c98a' : '#f4f4e4';
+    var chickenOp = on('chicken_visible') ? 0 : 1;
+    var fenceGapOp = on('fence_gap') ? 0 : 1;
+    var bucketOp = on('well_bucket_visible') ? 1 : 0;
+    var hayR = on('haystack_size') ? 28 : 20;
+    var hayRy = on('haystack_size') ? 18 : 14;
+
+    return (
+      '<svg viewBox="0 0 ' + VB_W + ' ' + VB_H + '" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="' + VB_W + '" height="' + VB_H + '" fill="#8fd1ea"/>' +
+      '<circle cx="340" cy="45" r="24" fill="' + sunFill + '"/>' +
+      '<g opacity="' + cloudOp + '" fill="#ffffff">' +
+        '<ellipse cx="70" cy="38" rx="24" ry="13"/><ellipse cx="92" cy="32" rx="16" ry="10"/><ellipse cx="50" cy="34" rx="14" ry="9"/>' +
+      '</g>' +
+      '<rect x="0" y="190" width="' + VB_W + '" height="14" fill="#6aa84f"/>' +
+      '<rect x="0" y="204" width="' + VB_W + '" height="56" fill="#8b5a2b"/>' +
+      '<rect x="255" y="140" width="80" height="64" fill="#a83a2a"/>' +
+      '<polygon points="248,140 295,102 342,140" fill="' + barnRoofFill + '"/>' +
+      '<rect x="280" y="168" width="22" height="36" fill="' + barnDoorFill + '"/>' +
+      '<rect x="345" y="120" width="26" height="84" fill="' + siloFill + '" stroke="#8b8b8b" stroke-width="1.5"/>' +
+      '<ellipse cx="358" cy="120" rx="13" ry="8" fill="' + siloFill + '" stroke="#8b8b8b" stroke-width="1.5"/>' +
+      '<g fill="' + cropFill + '">' +
+        '<polygon points="90,200 94,182 98,200"/><polygon points="110,200 114,182 118,200"/>' +
+        '<polygon points="130,200 134,182 138,200"/><polygon points="150,200 154,182 158,200"/>' +
+        '<polygon points="170,200 174,182 178,200"/>' +
+      '</g>' +
+      '<rect x="95" y="165" width="4" height="40" fill="#6b4420"/>' +
+      '<rect x="83" y="180" width="28" height="4" fill="#6b4420"/>' +
+      '<circle cx="97" cy="160" r="10" fill="#e8c98a"/>' +
+      '<polygon points="87,155 107,155 97,138" fill="' + hatFill + '"/>' +
+      '<g>' +
+        '<rect x="176" y="222" width="6" height="8" fill="#8b5a6a"/><rect x="196" y="222" width="6" height="8" fill="#8b5a6a"/>' +
+        '<ellipse cx="190" cy="228" rx="20" ry="13" fill="' + cowFill + '"/>' +
+        '<ellipse cx="182" cy="224" rx="4" ry="3" fill="#3a352c"/><ellipse cx="198" cy="232" rx="5" ry="3" fill="#3a352c"/>' +
+      '</g>' +
+      '<g opacity="' + chickenOp + '">' +
+        '<ellipse cx="235" cy="232" rx="8" ry="7" fill="#f4f4e4"/>' +
+        '<polygon points="242,229 248,232 242,235" fill="#c53a2a"/>' +
+      '</g>' +
+      '<rect x="10" y="188" width="4" height="18" fill="#6b4420"/>' +
+      '<rect x="66" y="188" width="4" height="18" fill="#6b4420"/>' +
+      '<rect x="38" y="188" width="4" height="18" fill="#6b4420"/>' +
+      '<rect x="10" y="192" width="60" height="4" fill="#6b4420"/>' +
+      '<rect x="10" y="200" width="60" height="4" fill="#6b4420" opacity="' + fenceGapOp + '"/>' +
+      '<rect x="20" y="176" width="26" height="30" fill="#9c9c9c" stroke="#6a6258" stroke-width="1.5"/>' +
+      '<polygon points="15,176 51,176 33,158" fill="#6b4420"/>' +
+      '<g opacity="' + bucketOp + '">' +
+        '<rect x="27" y="160" width="12" height="10" fill="#8b8b8b" stroke="#3a3a3a" stroke-width="1.5"/>' +
+      '</g>' +
+      '<ellipse cx="215" cy="196" rx="' + hayR + '" ry="' + hayRy + '" fill="#e0c14a" stroke="#b8964a" stroke-width="1.5"/>' +
+      '</svg>'
+    );
+  }
+
+  var SCENES = [
+    {
+      id: 'casa', name: 'CASA NA FLORESTA', svg: casaSVG,
+      diffs: [
+        { id: 'sun_color', box: [300, 5, 80, 80] },
+        { id: 'cloud1_visible', box: [15, 15, 90, 60] },
+        { id: 'cloud2_move', box: [150, 5, 130, 60] },
+        { id: 'leaf_extra_visible', box: [70, 120, 55, 60] },
+        { id: 'roof_color', box: [250, 95, 90, 60] },
+        { id: 'door_color', box: [278, 170, 34, 40] },
+        { id: 'window_visible', box: [310, 152, 36, 34] },
+        { id: 'chimney_smoke_visible', box: [312, 95, 44, 50] },
+        { id: 'mob_color', box: [142, 192, 42, 42] },
+        { id: 'mob_eye3_visible', box: [142, 192, 42, 42] },
+        { id: 'animal_color', box: [188, 214, 44, 32] },
+        { id: 'flower_move', box: [95, 210, 55, 32] },
+        { id: 'chest_latch_visible', box: [22, 200, 46, 40] },
+        { id: 'torch_flame_color', box: [372, 160, 28, 44] }
+      ]
+    },
+    {
+      id: 'caverna', name: 'CAVERNA DE MINÉRIOS', svg: cavernaSVG,
+      diffs: [
+        { id: 'torch1_flame_color', box: [20, 40, 50, 60] },
+        { id: 'torch2_visible', box: [330, 40, 50, 60] },
+        { id: 'stalactite_visible', box: [130, 0, 50, 45] },
+        { id: 'ore_color', box: [245, 85, 78, 60] },
+        { id: 'cart_move', box: [40, 175, 90, 24] },
+        { id: 'rail_visible', box: [15, 201, 130, 15] },
+        { id: 'skeleton_detail', box: [170, 170, 45, 55] },
+        { id: 'lava_color', box: [265, 205, 70, 35] },
+        { id: 'crack_visible', box: [195, 22, 55, 45] },
+        { id: 'ladder_rung_visible', box: [363, 145, 37, 90] },
+        { id: 'bucket_visible', box: [325, 198, 36, 30] },
+        { id: 'glow_visible', box: [245, 58, 45, 24] }
+      ]
+    },
+    {
+      id: 'fazenda', name: 'FAZENDA', svg: fazendaSVG,
+      diffs: [
+        { id: 'sun_color2', box: [300, 5, 80, 80] },
+        { id: 'cloud_visible', box: [25, 15, 90, 55] },
+        { id: 'barn_roof_color', box: [244, 98, 102, 45] },
+        { id: 'barn_door_color', box: [276, 164, 30, 44] },
+        { id: 'silo_color', box: [340, 108, 36, 100] },
+        { id: 'crop_color', box: [82, 178, 100, 26] },
+        { id: 'hat_color', box: [80, 132, 34, 30] },
+        { id: 'cow_color', box: [166, 208, 48, 34] },
+        { id: 'chicken_visible', box: [222, 220, 26, 22] },
+        { id: 'fence_gap', box: [8, 190, 66, 18] },
+        { id: 'well_bucket_visible', box: [12, 148, 36, 40] },
+        { id: 'haystack_size', box: [183, 172, 64, 44] }
+      ]
+    }
+  ];
+
+  var frameA = document.getElementById('frameA');
+  var frameB = document.getElementById('frameB');
+  var statTime = document.getElementById('statTime');
+  var statFound = document.getElementById('statFound');
+  var sceneNameEl = document.getElementById('sceneName');
+  var winOverlay = document.getElementById('winOverlay');
+  var winTime = document.getElementById('winTime');
+
+  var game = { seed: 0, scene: null, active: [], found: {}, startTime: null, elapsed: 0, finished: false };
+
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function shuffle(arr, rng) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(rng() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
   function pctBox(box) {
     return {
       left: (box[0] / VB_W * 100) + '%',
@@ -333,9 +503,10 @@
   }
 
   function buildFrame(container, activeSet) {
-    container.innerHTML = sceneSVG(activeSet);
+    var on = function(id) { return activeSet.has(id); };
+    container.innerHTML = game.scene.svg(on);
     game.active.forEach(function(id) {
-      var d = DIFFS.filter(function(x) { return x.id === id; })[0];
+      var d = game.scene.diffs.filter(function(x) { return x.id === id; })[0];
       var p = pctBox(d.box);
       var btn = document.createElement('button');
       btn.type = 'button';
@@ -411,12 +582,14 @@
   function initGame(seed) {
     game.seed = seed;
     var rng = mulberry32(seed);
-    game.active = shuffle(DIFFS.map(function(d) { return d.id; }), rng).slice(0, ROUND_COUNT);
+    game.scene = SCENES[Math.floor(rng() * SCENES.length)];
+    game.active = shuffle(game.scene.diffs.map(function(d) { return d.id; }), rng).slice(0, ROUND_COUNT);
     game.found = {};
     game.startTime = null;
     game.elapsed = 0;
     game.finished = false;
     winOverlay.hidden = true;
+    sceneNameEl.textContent = game.scene.name;
     var activeSetA = new Set();
     var activeSetB = new Set(game.active);
     buildFrame(frameA, activeSetA);

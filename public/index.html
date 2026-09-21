@@ -100,6 +100,9 @@
   .card-ritmo .card-screen{
     background:linear-gradient(180deg, #8fd1ea 0%, #bfe8f5 55%, #6aa84f 55%, #4a7a35 100%);
   }
+  .card-curiosidades .card-screen{
+    background:radial-gradient(ellipse 900px 500px at 50% -20%, #bfe8f5 0%, #8fd1ea 60%);
+  }
 
   .card-body{
     padding:16px 18px 20px;
@@ -135,6 +138,7 @@
   .card-blocos{ --card-accent:#9c6ad4; }
   .card-corrida{ --card-accent:#c26a3e; }
   .card-ritmo{ --card-accent:#4ad9d9; }
+  .card-curiosidades{ --card-accent:#f4c430; }
 
   footer{ font-size:11px; color:var(--text-dim); text-align:center; }
 </style>
@@ -148,6 +152,25 @@
   </header>
 
   <div class="games">
+    <a class="card card-curiosidades" href="./curiosidades/">
+      <div class="card-screen">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="32" cy="26" r="16" fill="#f4c430" stroke="#c99a1e" stroke-width="2"/>
+          <path d="M25 22 Q32 14 39 22" stroke="#c99a1e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <circle cx="27" cy="26" r="2.4" fill="#2b2318"/>
+          <circle cx="37" cy="26" r="2.4" fill="#2b2318"/>
+          <path d="M26 32 Q32 37 38 32" stroke="#2b2318" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <rect x="20" y="46" width="24" height="4" rx="2" fill="#ef476f"/>
+          <rect x="24" y="52" width="16" height="4" rx="2" fill="#1c7ed6"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <h2 class="card-title">Curiosidades</h2>
+        <p class="card-desc">Fatos curiosos do mundo real, explicados de um jeito divertido pra criançada.</p>
+        <span class="card-cta">VER →</span>
+      </div>
+    </a>
+
     <a class="card card-labirinto" href="./labirinto/">
       <div class="card-screen">
         <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">

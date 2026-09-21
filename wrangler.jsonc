@@ -11,5 +11,6 @@
   },
   "r2_buckets": [
     { "binding": "SONGS_BUCKET", "bucket_name": "labirinto-songs" }
-  ]
+  ],
+  "ai": { "binding": "AI" }
 }

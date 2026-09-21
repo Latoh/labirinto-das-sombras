@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Curiosidades</title>
+<style>
+  :root{
+    --sky:#8fd1ea;
+    --sky-2:#bfe8f5;
+    --sun:#f4c430;
+    --ink:#2b2b1e;
+    --panel:#ffffff;
+    --border:#d8d0b8;
+    --accent1:#ef476f;
+    --accent2:#1c7ed6;
+    --accent3:#2f9e44;
+    --accent4:#9c36b5;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 700px 400px at 50% -5%, var(--sky-2) 0%, var(--sky) 60%),
+      var(--sky);
+    background-attachment:fixed;
+    color:var(--ink);
+    font-family:Arial, Helvetica, sans-serif;
+    min-height:100vh;
+    padding-inline:16px;
+    padding-block:28px;
+    display:flex;
+    justify-content:center;
+  }
+
+  .wrap{ width:100%; max-width:760px; display:flex; flex-direction:column; gap:18px; }
+
+  .top-row{ display:flex; justify-content:space-between; gap:8px; }
+  .menu-link{
+    font-family:Arial, sans-serif;
+    font-size:13px;
+    font-weight:bold;
+    color:#2b2b1e;
+    text-decoration:none;
+    background:#fff;
+    border:2px solid #3a3a3a;
+    border-radius:6px;
+    padding:7px 12px;
+    box-shadow:0 3px 0 #b8b0a0;
+  }
+  .menu-link:hover{ color:var(--accent2); }
+
+  header{ text-align:center; display:flex; flex-direction:column; gap:6px; }
+  h1{
+    font-family:Arial, sans-serif;
+    font-weight:900;
+    font-size:clamp(28px, 7vw, 40px);
+    margin:0;
+    color:var(--accent1);
+    text-shadow:3px 3px 0 #fff, 4px 4px 0 rgba(0,0,0,0.15);
+    letter-spacing:0.02em;
+  }
+  .subtitle{
+    margin:0;
+    font-size:16px;
+    color:#3a3a2a;
+    font-weight:bold;
+  }
+
+  .cards{ display:flex; flex-direction:column; gap:18px; }
+
+  .card{
+    background:var(--panel);
+    border:3px solid var(--border);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 10px 24px -12px rgba(0,0,0,0.35);
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .card-title{
+    margin:0;
+    font-family:Arial, sans-serif;
+    font-weight:900;
+    font-size:22px;
+    color:var(--accent2);
+  }
+  .card:nth-child(4n+2) .card-title{ color:var(--accent1); }
+  .card:nth-child(4n+3) .card-title{ color:var(--accent3); }
+  .card:nth-child(4n+4) .card-title{ color:var(--accent4); }
+
+  .gallery{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(110px, 1fr));
+    gap:8px;
+  }
+  .gallery img{
+    width:100%;
+    height:110px;
+    object-fit:cover;
+    border-radius:10px;
+    border:2px solid var(--border);
+    background:#eee;
+  }
+
+  .fun-text{
+    margin:0;
+    font-family:Arial, sans-serif;
+    font-size:14px;
+    text-transform:uppercase;
+    line-height:1.7;
+    letter-spacing:0.01em;
+    color:#2b2b1e;
+  }
+
+  .wiki-link{
+    align-self:flex-start;
+    font-family:Arial, sans-serif;
+    font-size:12px;
+    color:#7a7a6a;
+    text-decoration:none;
+  }
+  .wiki-link:hover{ text-decoration:underline; }
+
+  .card-admin-row{ display:flex; justify-content:flex-end; }
+  .del-link{
+    font-family:Arial, sans-serif;
+    font-size:11px;
+    color:var(--accent1);
+    background:none;
+    border:none;
+    cursor:pointer;
+    text-decoration:underline;
+    padding:0;
+  }
+
+  .empty-msg{
+    text-align:center;
+    font-size:15px;
+    color:#3a3a2a;
+    background:rgba(255,255,255,0.6);
+    border-radius:12px;
+    padding:24px;
+  }
+
+  .admin-box{
+    background:var(--panel);
+    border:3px dashed #b8b0a0;
+    border-radius:16px;
+    padding:16px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .admin-title{
+    margin:0;
+    font-family:Arial, sans-serif;
+    font-weight:bold;
+    font-size:15px;
+    color:#3a3a2a;
+  }
+  .admin-form{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .admin-form input{
+    flex:1;
+    min-width:110px;
+    font-family:Arial, sans-serif;
+    font-size:14px;
+    padding:8px 10px;
+    border:2px solid #b8b0a0;
+    border-radius:6px;
+  }
+  .admin-btn{
+    font-family:Arial, sans-serif;
+    font-weight:bold;
+    font-size:13px;
+    color:#fff;
+    background:var(--accent3);
+    border:none;
+    border-radius:6px;
+    padding:9px 16px;
+    cursor:pointer;
+  }
+  .admin-btn:disabled{ opacity:0.6; cursor:default; }
+  .admin-status{ margin:0; font-size:13px; }
+  .admin-status.err{ color:var(--accent1); }
+  .admin-status.ok{ color:var(--accent3); }
+
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <div class="top-row">
+    <a class="menu-link" href="../">← MENU</a>
+  </div>
+  <header>
+    <h1>Curiosidades</h1>
+    <p class="subtitle">Coisas curiosas do mundo, explicadas de um jeito divertido!</p>
+  </header>
+
+  <div class="cards" id="cardsEl"></div>
+  <p class="empty-msg" id="emptyMsg" hidden>Nenhuma curiosidade ainda. Volte logo!</p>
+
+  <div class="admin-box" id="adminBox" hidden>
+    <p class="admin-title">Adicionar novo tema (vira curiosidade automaticamente)</p>
+    <div class="admin-form">
+      <input type="text" id="topicInput" placeholder="ex: Buraco Negro">
+      <input type="text" id="adminUser" placeholder="usuário" autocomplete="username">
+      <input type="password" id="adminPass" placeholder="senha" autocomplete="current-password">
+      <button class="admin-btn" id="addBtn" type="button">Adicionar</button>
+    </div>
+    <p class="admin-status" id="adminStatus" hidden></p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var API_BASE = 'https://labirinto-das-sombras.mosquito38.workers.dev';
+
+  var cardsEl = document.getElementById('cardsEl');
+  var emptyMsg = document.getElementById('emptyMsg');
+  var adminBox = document.getElementById('adminBox');
+  var topicInput = document.getElementById('topicInput');
+  var adminUser = document.getElementById('adminUser');
+  var adminPass = document.getElementById('adminPass');
+  var addBtn = document.getElementById('addBtn');
+  var adminStatus = document.getElementById('adminStatus');
+
+  var isMobile = /Android|iPhone|iPod|Windows Phone/i.test(navigator.userAgent) ||
+    (window.matchMedia('(pointer: coarse)').matches && window.matchMedia('(max-width: 640px)').matches);
+  if (!isMobile) adminBox.hidden = false;
+
+  function esc(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function render(topics) {
+    cardsEl.innerHTML = '';
+    emptyMsg.hidden = topics.length > 0;
+    topics.slice().reverse().forEach(function(t) {
+      var card = document.createElement('div');
+      card.className = 'card';
+
+      var h2 = document.createElement('h2');
+      h2.className = 'card-title';
+      h2.textContent = t.topic;
+      card.appendChild(h2);
+
+      if (t.images && t.images.length) {
+        var gallery = document.createElement('div');
+        gallery.className = 'gallery';
+        t.images.forEach(function(src) {
+          var img = document.createElement('img');
+          img.src = src;
+          img.alt = t.topic;
+          img.loading = 'lazy';
+          gallery.appendChild(img);
+        });
+        card.appendChild(gallery);
+      }
+
+      var p = document.createElement('p');
+      p.className = 'fun-text';
+      p.textContent = t.funText;
+      card.appendChild(p);
+
+      if (t.wikiUrl) {
+        var a = document.createElement('a');
+        a.className = 'wiki-link';
+        a.href = t.wikiUrl;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = 'Fonte: Wikipédia →';
+        card.appendChild(a);
+      }
+
+      if (!isMobile) {
+        var row = document.createElement('div');
+        row.className = 'card-admin-row';
+        var del = document.createElement('button');
+        del.className = 'del-link';
+        del.type = 'button';
+        del.textContent = 'apagar este tema';
+        del.addEventListener('click', function() { deleteTopic(t.id); });
+        row.appendChild(del);
+        card.appendChild(row);
+      }
+
+      cardsEl.appendChild(card);
+    });
+  }
+
+  function loadTopics() {
+    fetch(API_BASE + '/api/curiosities').then(function(res) { return res.json(); }).then(function(data) {
+      render(data.topics || []);
+    }).catch(function() {
+      emptyMsg.hidden = false;
+      emptyMsg.textContent = 'Não consegui carregar as curiosidades agora.';
+    });
+  }
+
+  function deleteTopic(id) {
+    var user = window.prompt('Usuário pra apagar:');
+    if (!user) return;
+    var pass = window.prompt('Senha:');
+    if (!pass) return;
+    fetch(API_BASE + '/api/curiosities/' + id, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Basic ' + btoa(user + ':' + pass) }
+    }).then(function(res) {
+      if (res.ok) loadTopics();
+      else window.alert('Não consegui apagar (usuário/senha errados?).');
+    }).catch(function() { window.alert('Falha de conexão.'); });
+  }
+
+  addBtn.addEventListener('click', function() {
+    var topic = topicInput.value.trim();
+    var user = adminUser.value.trim(), pass = adminPass.value;
+    if (!topic) {
+      adminStatus.className = 'admin-status err';
+      adminStatus.textContent = 'Escreva um tema.';
+      adminStatus.hidden = false;
+      return;
+    }
+    if (!user || !pass) {
+      adminStatus.className = 'admin-status err';
+      adminStatus.textContent = 'Preencha usuário e senha.';
+      adminStatus.hidden = false;
+      return;
+    }
+    addBtn.disabled = true;
+    adminStatus.className = 'admin-status';
+    adminStatus.textContent = 'Buscando na Wikipédia e transformando pra criançada... (pode levar uns segundos)';
+    adminStatus.hidden = false;
+    fetch(API_BASE + '/api/curiosities', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + btoa(user + ':' + pass),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ topic: topic })
+    }).then(function(res) {
+      return res.json().then(function(data) { return { ok: res.ok, data: data }; });
+    }).then(function(r) {
+      addBtn.disabled = false;
+      if (r.ok) {
+        adminStatus.className = 'admin-status ok';
+        adminStatus.textContent = 'Adicionado! "' + r.data.topic + '" já está na lista.';
+        topicInput.value = '';
+        adminPass.value = '';
+        loadTopics();
+      } else {
+        adminStatus.className = 'admin-status err';
+        adminStatus.textContent = r.data.error || 'Não consegui adicionar.';
+      }
+    }).catch(function() {
+      addBtn.disabled = false;
+      adminStatus.className = 'admin-status err';
+      adminStatus.textContent = 'Falha de conexão. Tente de novo.';
+    });
+  });
+
+  loadTopics();
+})();
+</script>
+
+</body>
+</html>

@@ -128,6 +128,167 @@ async function deleteSong(request, env, id) {
   return json({ ok: true, totalBytes: index.totalBytes });
 }
 
+const CURIOSITIES_KEY = "_curiosities.json";
+const WIKI_UA = "labirinto-das-sombras-curiosidades/1.0 (site pessoal; contato: mosquito38@gmail.com)";
+
+async function readCuriosities(env) {
+  const obj = await env.SONGS_BUCKET.get(CURIOSITIES_KEY);
+  if (!obj) return { topics: [] };
+  try {
+    return await obj.json();
+  } catch (e) {
+    return { topics: [] };
+  }
+}
+
+async function writeCuriosities(env, data) {
+  await env.SONGS_BUCKET.put(CURIOSITIES_KEY, JSON.stringify(data), {
+    httpMetadata: { contentType: "application/json" }
+  });
+}
+
+async function fetchWikiSummary(topic) {
+  const title = topic.trim().replace(/\s+/g, "_");
+  const res = await fetch(
+    "https://pt.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(title),
+    { headers: { "User-Agent": WIKI_UA, "accept": "application/json" } }
+  );
+  if (!res.ok) throw new Error("wiki-not-found");
+  const data = await res.json();
+  if (data.type === "disambiguation") throw new Error("wiki-ambiguous");
+  return {
+    title: data.title,
+    extract: data.extract || "",
+    thumbnail: data.thumbnail ? data.thumbnail.source : null,
+    original: data.originalimage ? data.originalimage.source : null,
+    wikiUrl: data.content_urls && data.content_urls.desktop ? data.content_urls.desktop.page : null
+  };
+}
+
+async function fetchExtraImages(title) {
+  try {
+    const listRes = await fetch(
+      "https://pt.wikipedia.org/w/api.php?action=query&titles=" + encodeURIComponent(title) +
+      "&prop=images&imlimit=30&format=json&origin=*",
+      { headers: { "User-Agent": WIKI_UA } }
+    );
+    if (!listRes.ok) return [];
+    const listData = await listRes.json();
+    const pages = listData.query && listData.query.pages ? Object.values(listData.query.pages) : [];
+    let files = [];
+    pages.forEach(function (p) { if (p.images) files = files.concat(p.images.map(function (i) { return i.title; })); });
+    files = files.filter(function (f) {
+      var lower = f.toLowerCase();
+      return /\.(jpe?g|png)$/.test(lower) &&
+        lower.indexOf("logo") === -1 && lower.indexOf("icon") === -1 &&
+        lower.indexOf("edit") === -1 && lower.indexOf("disambig") === -1 &&
+        lower.indexOf("question") === -1 && lower.indexOf("commons") === -1;
+    }).slice(0, 4);
+    if (files.length === 0) return [];
+
+    const infoRes = await fetch(
+      "https://pt.wikipedia.org/w/api.php?action=query&titles=" + encodeURIComponent(files.join("|")) +
+      "&prop=imageinfo&iiprop=url&iiurlwidth=500&format=json&origin=*",
+      { headers: { "User-Agent": WIKI_UA } }
+    );
+    if (!infoRes.ok) return [];
+    const infoData = await infoRes.json();
+    const infoPages = infoData.query && infoData.query.pages ? Object.values(infoData.query.pages) : [];
+    return infoPages
+      .map(function (p) { return p.imageinfo && p.imageinfo[0] ? (p.imageinfo[0].thumburl || p.imageinfo[0].url) : null; })
+      .filter(Boolean)
+      .slice(0, 3);
+  } catch (e) {
+    return [];
+  }
+}
+
+async function generateKidText(env, topic, extract) {
+  const prompt = [
+    "Voce e um contador de historias que explica coisas pra uma crianca de 7 anos, em portugues do Brasil.",
+    "Regras: frases curtas e simples, nada de palavras dificeis, use comparacoes divertidas do dia a dia",
+    "(tamanhos, animais, coisas conhecidas), tom animado e curioso, baseie-se SOMENTE no texto fornecido,",
+    "nao invente fatos. Escreva de 4 a 6 frases curtas. Nao use titulos nem listas, so o texto corrido.",
+    "",
+    "Assunto: " + topic,
+    "Texto da Wikipedia: " + extract.slice(0, 1800),
+    "",
+    "Explicacao divertida pra crianca de 7 anos:"
+  ].join("\n");
+
+  const result = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
+    messages: [{ role: "user", content: prompt }],
+    max_tokens: 400
+  });
+  return (result && result.response ? result.response : "").trim();
+}
+
+async function listCuriosities(env) {
+  const data = await readCuriosities(env);
+  return json({ topics: data.topics });
+}
+
+async function addCuriosity(request, env) {
+  if (!checkAuth(request, env)) return unauthorized();
+  let body;
+  try {
+    body = await request.json();
+  } catch (e) {
+    return json({ error: "Envio inválido." }, 400);
+  }
+  const topic = (body.topic || "").toString().trim().slice(0, 100);
+  if (!topic) return json({ error: "Escreva um tema." }, 400);
+
+  let summary;
+  try {
+    summary = await fetchWikiSummary(topic);
+  } catch (e) {
+    return json({ error: "Não achei esse assunto na Wikipédia. Tente outro nome." }, 404);
+  }
+  if (!summary.extract) {
+    return json({ error: "Esse assunto não tem texto suficiente na Wikipédia." }, 404);
+  }
+
+  let funText;
+  try {
+    funText = await generateKidText(env, topic, summary.extract);
+  } catch (e) {
+    return json({ error: "Não consegui transformar esse texto agora. Tente de novo." }, 500);
+  }
+  if (!funText) {
+    return json({ error: "Não consegui transformar esse texto agora. Tente de novo." }, 500);
+  }
+
+  const images = [];
+  if (summary.original) images.push(summary.original);
+  else if (summary.thumbnail) images.push(summary.thumbnail);
+  const extra = await fetchExtraImages(summary.title);
+  extra.forEach(function (u) { if (images.indexOf(u) === -1) images.push(u); });
+
+  const data = await readCuriosities(env);
+  const entry = {
+    id: crypto.randomUUID(),
+    topic: summary.title || topic,
+    funText: funText,
+    images: images.slice(0, 4),
+    wikiUrl: summary.wikiUrl,
+    addedAt: Date.now()
+  };
+  data.topics.push(entry);
+  await writeCuriosities(env, data);
+  return json(entry);
+}
+
+async function deleteCuriosity(request, env, id) {
+  if (!checkAuth(request, env)) return unauthorized();
+  const data = await readCuriosities(env);
+  const before = data.topics.length;
+  data.topics = data.topics.filter(function (t) { return t.id !== id; });
+  if (data.topics.length === before) return json({ error: "Tema não encontrado." }, 404);
+  await writeCuriosities(env, data);
+  return json({ ok: true });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -148,6 +309,17 @@ export default {
     }
     if (m && request.method === "DELETE") {
       return deleteSong(request, env, m[1]);
+    }
+
+    if (url.pathname === "/api/curiosities" && request.method === "GET") {
+      return listCuriosities(env);
+    }
+    if (url.pathname === "/api/curiosities" && request.method === "POST") {
+      return addCuriosity(request, env);
+    }
+    const cm = url.pathname.match(/^\/api\/curiosities\/([a-zA-Z0-9-]+)$/);
+    if (cm && request.method === "DELETE") {
+      return deleteCuriosity(request, env, cm[1]);
     }
 
     return env.ASSETS.fetch(request);

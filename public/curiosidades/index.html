@@ -340,7 +340,7 @@
     </div>
     <div class="detail-gallery" id="detailGallery"></div>
     <div id="detailSections"></div>
-    <a class="wiki-link" id="detailWikiLink" href="#" target="_blank" rel="noopener">Fonte: Wikipédia →</a>
+    <p class="wiki-link" id="detailWikiLink">Fonte: Wikipédia</p>
   </div>
 
   <div class="admin-box" id="adminBox" hidden>
@@ -446,12 +446,7 @@
       card.appendChild(textWrap);
       detailSectionsEl.appendChild(card);
     });
-    if (t.wikiUrl) {
-      detailWikiLink.href = t.wikiUrl;
-      detailWikiLink.hidden = false;
-    } else {
-      detailWikiLink.hidden = true;
-    }
+    detailWikiLink.hidden = !t.wikiUrl;
     window.scrollTo(0, 0);
     history.replaceState(null, '', location.pathname + '#' + t.id);
   }

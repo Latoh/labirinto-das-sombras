@@ -165,11 +165,11 @@ async function fetchWikiSummary(topic) {
   };
 }
 
-async function fetchExtraImages(title) {
+async function fetchExtraImages(title, limit) {
   try {
     const listRes = await fetch(
       "https://pt.wikipedia.org/w/api.php?action=query&titles=" + encodeURIComponent(title) +
-      "&prop=images&imlimit=30&format=json&origin=*",
+      "&prop=images&imlimit=40&format=json&origin=*",
       { headers: { "User-Agent": WIKI_UA } }
     );
     if (!listRes.ok) return [];
@@ -183,7 +183,7 @@ async function fetchExtraImages(title) {
         lower.indexOf("logo") === -1 && lower.indexOf("icon") === -1 &&
         lower.indexOf("edit") === -1 && lower.indexOf("disambig") === -1 &&
         lower.indexOf("question") === -1 && lower.indexOf("commons") === -1;
-    }).slice(0, 4);
+    }).slice(0, (limit || 3) + 1);
     if (files.length === 0) return [];
 
     const infoRes = await fetch(
@@ -197,9 +197,25 @@ async function fetchExtraImages(title) {
     return infoPages
       .map(function (p) { return p.imageinfo && p.imageinfo[0] ? (p.imageinfo[0].thumburl || p.imageinfo[0].url) : null; })
       .filter(Boolean)
-      .slice(0, 3);
+      .slice(0, limit || 3);
   } catch (e) {
     return [];
+  }
+}
+
+async function fetchFullExtract(title) {
+  try {
+    const res = await fetch(
+      "https://pt.wikipedia.org/w/api.php?action=query&titles=" + encodeURIComponent(title) +
+      "&prop=extracts&explaintext=1&format=json&origin=*",
+      { headers: { "User-Agent": WIKI_UA } }
+    );
+    if (!res.ok) return "";
+    const data = await res.json();
+    const pages = data.query && data.query.pages ? Object.values(data.query.pages) : [];
+    return pages[0] && pages[0].extract ? pages[0].extract : "";
+  } catch (e) {
+    return "";
   }
 }
 
@@ -221,6 +237,51 @@ async function generateKidText(env, topic, extract) {
     max_tokens: 400
   });
   return (result && result.response ? result.response : "").trim();
+}
+
+async function generateDetailedKidText(env, topic, fullExtract) {
+  const prompt = [
+    "Voce e um professor super divertido que adora explicar coisas pra uma crianca de 7 anos, em portugues do Brasil.",
+    "Regras: frases curtas e simples, vocabulario facil, tom animado e cheio de comparacoes com coisas que",
+    "uma crianca conhece (bichos, brinquedos, tamanhos do dia a dia). Baseie-se SOMENTE no texto fornecido,",
+    "nao invente fatos que nao estao nele. Organize em 3 partes curtas, cada uma com um titulo BEM simples",
+    "(2 a 4 palavras, sem dois-pontos) seguido de 2 a 3 frases. A ultima parte deve ser uma curiosidade",
+    "surpreendente ou engracada. Formate assim, exatamente:",
+    "TITULO 1",
+    "texto da parte 1",
+    "TITULO 2",
+    "texto da parte 2",
+    "TITULO 3",
+    "texto da parte 3",
+    "",
+    "Assunto: " + topic,
+    "Texto da Wikipedia: " + fullExtract.slice(0, 4000),
+    "",
+    "Explicacao completa e divertida pra crianca de 7 anos:"
+  ].join("\n");
+
+  const result = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
+    messages: [{ role: "user", content: prompt }],
+    max_tokens: 900
+  });
+  const raw = (result && result.response ? result.response : "").trim();
+
+  var lines = raw.split("\n").map(function (l) { return l.trim(); }).filter(Boolean);
+  var sections = [];
+  var current = null;
+  lines.forEach(function (line) {
+    var isHeading = line.length < 40 && !/[.!?]$/.test(line);
+    if (isHeading) {
+      current = { heading: line.replace(/^[#\-*\d.]+\s*/, ""), body: "" };
+      sections.push(current);
+    } else if (current) {
+      current.body += (current.body ? " " : "") + line;
+    } else {
+      current = { heading: "", body: line };
+      sections.push(current);
+    }
+  });
+  return sections.filter(function (s) { return s.body; });
 }
 
 async function listCuriosities(env) {
@@ -259,10 +320,18 @@ async function addCuriosity(request, env) {
     return json({ error: "Não consegui transformar esse texto agora. Tente de novo." }, 500);
   }
 
+  const fullExtract = await fetchFullExtract(summary.title) || summary.extract;
+  let detailSections = [];
+  try {
+    detailSections = await generateDetailedKidText(env, topic, fullExtract);
+  } catch (e) {
+    detailSections = [];
+  }
+
   const images = [];
   if (summary.original) images.push(summary.original);
   else if (summary.thumbnail) images.push(summary.thumbnail);
-  const extra = await fetchExtraImages(summary.title);
+  const extra = await fetchExtraImages(summary.title, 6);
   extra.forEach(function (u) { if (images.indexOf(u) === -1) images.push(u); });
 
   const data = await readCuriosities(env);
@@ -270,7 +339,8 @@ async function addCuriosity(request, env) {
     id: crypto.randomUUID(),
     topic: summary.title || topic,
     funText: funText,
-    images: images.slice(0, 4),
+    detailSections: detailSections,
+    images: images.slice(0, 7),
     wikiUrl: summary.wikiUrl,
     addedAt: Date.now()
   };
